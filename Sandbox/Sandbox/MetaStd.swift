@@ -48,6 +48,18 @@ public struct Nothing: Instance {
     public var type: Metatype { return Anything.type }
 }
 
+public struct Credit: Instance {
+
+    public static let type = Type<Credit>()
+
+    public var type: Metatype { return Credit.type }
+    public let amount: Int
+
+    public init(amount: Int) {
+        self.amount = amount
+    }
+}
+
 public struct Maybe: Instance {
 
     public static func type(_ valueType: Metatype) -> Metatype {
@@ -56,6 +68,8 @@ public struct Maybe: Instance {
 
     public let type: Metatype
     public let value: Instance?
+
+    init(value: Instance) throws { try self.init(value.type, value: value) }
 
     init(_ valueType: Metatype, value: Instance?) throws {
         if let value = value {
@@ -79,7 +93,7 @@ public struct List: Instance {
     public let items: [Instance]
 
     init(of itemType: Metatype, items: [Instance]) throws {
-        try items.forEach { item in
+        for item in items {
             guard itemType.isType(of: item)
             else { throw Failure.typeMismatch(actual: item.type, expected: itemType) }
         }
