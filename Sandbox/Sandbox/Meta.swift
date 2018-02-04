@@ -1,81 +1,64 @@
-public protocol Instance {
-
-    var type: Metatype { get }
-}
-
-public protocol Metatype: CustomStringConvertible {
+public protocol TypeRepresenting: class {
 
     var name: String { get }
-    var parameters: [Variance] { get }
+    var parameters: [TypeParameter] { get }
 
     func isType(of some: Instance) -> Bool
-    func isSubtype(of type: Metatype) -> Bool
+    func isSubtype(of other: TypeRepresenting) -> Bool
+
+    //func makeInstance() -> Instance
 }
 
-public extension Metatype {
+public extension TypeRepresenting {
 
-    var description: String {
-        return name + (parameters.isEmpty ? "" : "<\(parameters.map(String.init).joined(separator: ", "))>")
+    func isEqual(to other: TypeRepresenting) -> Bool {
+        return name == other.name
+            && parameters.count == other.parameters.count
+            && !zip(parameters, other.parameters).contains(where: { !$0.isEqual(to: $1) })
+    }
+
+    func refines(_ other: TypeRepresenting) -> Bool {
+        return name == other.name
+            && parameters.count == other.parameters.count
+            && !zip(parameters, other.parameters).contains(where: { !$0.refines($1) })
     }
 }
 
-public func ==(lhs: Metatype, rhs: Metatype) -> Bool {
-    return lhs.name == rhs.name
-        && zip(lhs.parameters, rhs.parameters).reduce(true, { result, pair in result && pair.0 == pair.1 })
-}
+public struct TypeParameter {
 
-public enum Variance {
-    case invariant(Metatype)
-    case covariant(Metatype)
-    case contravariant(Metatype)
+    public enum Variance {
+        case invariant
+        case covariant
+        case contravariant
+    }
 
-    var type: Metatype {
-        switch self {
-        case let .invariant(type):
-            return type
-        case let .covariant(type):
-            return type
-        case let .contravariant(type):
-            return type
+    public let variance: Variance
+    public let base: TypeRepresenting
+
+    public init(_ variance: Variance, _ base: TypeRepresenting) {
+        self.variance = variance
+        self.base = base
+    }
+
+    public func refines(_ other: TypeParameter) -> Bool {
+        assert(variance == other.variance)
+        switch variance {
+        case .invariant:
+            return base.isEqual(to: other.base)
+        case .covariant:
+            return base.isSubtype(of: other.base)
+        case .contravariant:
+            return other.base.isSubtype(of: base)
         }
     }
 
-    func isCompatible(with other: Variance) -> Bool {
-        switch (self, other) {
-        case let (.invariant(a), .invariant(b)):
-            return a == b
-        case let (.covariant(a), .covariant(b)):
-            return a.isSubtype(of: b)
-        case let (.contravariant(a), .contravariant(b)):
-            return b.isSubtype(of: a)
-        case (.invariant, _), (.covariant, _), (.contravariant, _):
-            return false
-        }
+    public func isEqual(to other: TypeParameter) -> Bool {
+        return variance == other.variance
+            && base.isEqual(to: other.base)
     }
 }
 
-extension Variance: Equatable {
+public protocol Instance {
 
-    public static func ==(lhs: Variance, rhs: Variance) -> Bool {
-        switch (lhs, rhs) {
-        case (.invariant, .invariant), (.covariant, .covariant), (.contravariant, .contravariant):
-            return lhs.type == rhs.type
-        case (.invariant, _), (.covariant, _), (.contravariant, _):
-            return false
-        }
-    }
-}
-
-extension Variance: CustomStringConvertible {
-
-    public var description: String {
-        switch self {
-        case let .invariant(type):
-            return "invariant(\(type))"
-        case let .covariant(type):
-            return "covariant(\(type))"
-        case let .contravariant(type):
-            return "contravariant(\(type))"
-        }
-    }
+    var type: TypeRepresenting { get }
 }

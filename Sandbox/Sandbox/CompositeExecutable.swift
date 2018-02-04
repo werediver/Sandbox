@@ -27,7 +27,7 @@ public struct CompositeExecutable: Executable {
         else { throw Failure.degenerateCompositeExecutable }
 
         for (a, b) in zip(children, children.dropFirst()) {
-            guard a.types.output == b.types.input
+            guard a.types.output.isSubtype(of: b.types.input)
             else { throw Failure.typeMismatch(a, b) }
         }
 

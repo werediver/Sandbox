@@ -5,7 +5,7 @@ public protocol Context {
 
 public protocol Executable {
 
-    typealias Types = (input: Metatype, output: Metatype)
+    typealias Types = (input: TypeRepresenting, output: TypeRepresenting)
 
     var name: String { get }
     var types: Types { get }
