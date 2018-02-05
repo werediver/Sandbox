@@ -7,18 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F146E65A2027A9D100C9C47F /* Meta.swift in Sources */ = {isa = PBXBuildFile; fileRef = F146E6592027A9D100C9C47F /* Meta.swift */; };
+		F146E65C2027AC5300C9C47F /* MetaTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F146E65B2027AC5300C9C47F /* MetaTypes.swift */; };
+		F146E65E2027B0AF00C9C47F /* MetaFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F146E65D2027B0AF00C9C47F /* MetaFunctions.swift */; };
 		F17841161FF7F8A30058E513 /* Sandbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F178410C1FF7F8A30058E513 /* Sandbox.framework */; };
 		F178411B1FF7F8A30058E513 /* SandboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F178411A1FF7F8A30058E513 /* SandboxTests.swift */; };
 		F178411D1FF7F8A30058E513 /* Sandbox.h in Headers */ = {isa = PBXBuildFile; fileRef = F178410F1FF7F8A30058E513 /* Sandbox.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F17841291FF7FB9B0058E513 /* Quick.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F17841271FF7FB9B0058E513 /* Quick.framework */; };
 		F178412A1FF7FB9B0058E513 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F17841281FF7FB9B0058E513 /* Nimble.framework */; };
-		F178412C1FF7FBDF0058E513 /* Sandbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = F178412B1FF7FBDF0058E513 /* Sandbox.swift */; };
 		F17841321FF7FD770058E513 /* Nimble.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F17841281FF7FB9B0058E513 /* Nimble.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F17841331FF7FD770058E513 /* Quick.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F17841271FF7FB9B0058E513 /* Quick.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F19C13AE1FF930C70098ED66 /* CompositeExecutable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19C13AD1FF930C70098ED66 /* CompositeExecutable.swift */; };
-		F19C13B01FF931080098ED66 /* GenericExecutable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19C13AF1FF931080098ED66 /* GenericExecutable.swift */; };
-		F1AA00D22003F244007CBA14 /* Meta.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1AA00D12003F244007CBA14 /* Meta.swift */; };
-		F1AA00D42003F7DA007CBA14 /* MetaStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1AA00D32003F7DA007CBA14 /* MetaStd.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +44,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F146E6592027A9D100C9C47F /* Meta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meta.swift; sourceTree = "<group>"; };
+		F146E65B2027AC5300C9C47F /* MetaTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaTypes.swift; sourceTree = "<group>"; };
+		F146E65D2027B0AF00C9C47F /* MetaFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaFunctions.swift; sourceTree = "<group>"; };
 		F178410C1FF7F8A30058E513 /* Sandbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Sandbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F178410F1FF7F8A30058E513 /* Sandbox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Sandbox.h; sourceTree = "<group>"; };
 		F17841101FF7F8A30058E513 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -54,11 +55,6 @@
 		F178411C1FF7F8A30058E513 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F17841271FF7FB9B0058E513 /* Quick.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quick.framework; path = ../Carthage/Build/Mac/Quick.framework; sourceTree = "<group>"; };
 		F17841281FF7FB9B0058E513 /* Nimble.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Nimble.framework; path = ../Carthage/Build/Mac/Nimble.framework; sourceTree = "<group>"; };
-		F178412B1FF7FBDF0058E513 /* Sandbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sandbox.swift; sourceTree = "<group>"; };
-		F19C13AD1FF930C70098ED66 /* CompositeExecutable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeExecutable.swift; sourceTree = "<group>"; };
-		F19C13AF1FF931080098ED66 /* GenericExecutable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericExecutable.swift; sourceTree = "<group>"; };
-		F1AA00D12003F244007CBA14 /* Meta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meta.swift; sourceTree = "<group>"; };
-		F1AA00D32003F7DA007CBA14 /* MetaStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaStd.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,11 +103,9 @@
 			children = (
 				F178410F1FF7F8A30058E513 /* Sandbox.h */,
 				F17841101FF7F8A30058E513 /* Info.plist */,
-				F178412B1FF7FBDF0058E513 /* Sandbox.swift */,
-				F19C13AD1FF930C70098ED66 /* CompositeExecutable.swift */,
-				F19C13AF1FF931080098ED66 /* GenericExecutable.swift */,
-				F1AA00D12003F244007CBA14 /* Meta.swift */,
-				F1AA00D32003F7DA007CBA14 /* MetaStd.swift */,
+				F146E6592027A9D100C9C47F /* Meta.swift */,
+				F146E65B2027AC5300C9C47F /* MetaTypes.swift */,
+				F146E65D2027B0AF00C9C47F /* MetaFunctions.swift */,
 			);
 			path = Sandbox;
 			sourceTree = "<group>";
@@ -252,11 +246,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F1AA00D22003F244007CBA14 /* Meta.swift in Sources */,
-				F178412C1FF7FBDF0058E513 /* Sandbox.swift in Sources */,
-				F19C13AE1FF930C70098ED66 /* CompositeExecutable.swift in Sources */,
-				F1AA00D42003F7DA007CBA14 /* MetaStd.swift in Sources */,
-				F19C13B01FF931080098ED66 /* GenericExecutable.swift in Sources */,
+				F146E65E2027B0AF00C9C47F /* MetaFunctions.swift in Sources */,
+				F146E65C2027AC5300C9C47F /* MetaTypes.swift in Sources */,
+				F146E65A2027A9D100C9C47F /* Meta.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

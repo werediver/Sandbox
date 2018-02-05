@@ -1,11 +1,6 @@
 import Sandbox
 
-final class DummyContext: Context {
-
-    func execute(_ executable: Executable) {}
-}
-
-func examine<T>(_ body: () throws -> T) -> T? {
+func inspect<T>(_ body: () throws -> T) -> T! {
     do {
         let result = try body()
         print("✔ \(result)")
@@ -16,12 +11,10 @@ func examine<T>(_ body: () throws -> T) -> T? {
     }
 }
 
-let findCredit = GenericExecutable(name: "FindCredit", types: (Nothing.type, Credit.type)) { _, _ in Credit(amount: 1) }
-let consumeCredit = GenericExecutable(name: "ConsumeCredit", types: (Credit.type, Nothing.type)) { _, food in
-    print("Consumed: \(food)")
-    return Nothing.instance
-}
+let f = Function.Value(
+    input: Credit(),
+    output: Nothing(),
+    body: { value in dump(value); return Nothing.Value() }
+)
 
-let program = examine { try findCredit.composed(with: [consumeCredit]) }!
-
-examine { try program.execute(in: DummyContext(), with: Nothing.instance) }
+f.body(Credit.Value(amount: 10))

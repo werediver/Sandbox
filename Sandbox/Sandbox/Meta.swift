@@ -1,64 +1,33 @@
-public protocol TypeRepresenting: class {
+public protocol AnyValue {
+
+    var type: AnyType { get }
+}
+
+public protocol AnyType {
 
     var name: String { get }
-    var parameters: [TypeParameter] { get }
 
-    func isType(of some: Instance) -> Bool
-    func isSubtype(of other: TypeRepresenting) -> Bool
-
-    //func makeInstance() -> Instance
+    func equals(to other: AnyType) -> Bool
+    func isType(of value: AnyValue) -> Bool
 }
 
-public extension TypeRepresenting {
+public extension AnyType {
 
-    func isEqual(to other: TypeRepresenting) -> Bool {
-        return name == other.name
-            && parameters.count == other.parameters.count
-            && !zip(parameters, other.parameters).contains(where: { !$0.isEqual(to: $1) })
-    }
+    var name: String { return "\(Self.self)" }
 
-    func refines(_ other: TypeRepresenting) -> Bool {
-        return name == other.name
-            && parameters.count == other.parameters.count
-            && !zip(parameters, other.parameters).contains(where: { !$0.refines($1) })
+    func equals(to other: AnyType) -> Bool {
+        return other is Self
     }
 }
 
-public struct TypeParameter {
+public protocol ValueType: AnyType {
 
-    public enum Variance {
-        case invariant
-        case covariant
-        case contravariant
-    }
-
-    public let variance: Variance
-    public let base: TypeRepresenting
-
-    public init(_ variance: Variance, _ base: TypeRepresenting) {
-        self.variance = variance
-        self.base = base
-    }
-
-    public func refines(_ other: TypeParameter) -> Bool {
-        assert(variance == other.variance)
-        switch variance {
-        case .invariant:
-            return base.isEqual(to: other.base)
-        case .covariant:
-            return base.isSubtype(of: other.base)
-        case .contravariant:
-            return other.base.isSubtype(of: base)
-        }
-    }
-
-    public func isEqual(to other: TypeParameter) -> Bool {
-        return variance == other.variance
-            && base.isEqual(to: other.base)
-    }
+    associatedtype Value: AnyValue
 }
 
-public protocol Instance {
+public extension ValueType {
 
-    var type: TypeRepresenting { get }
+    func isType(of value: AnyValue) -> Bool {
+        return value is Value && equals(to: value.type)
+    }
 }
