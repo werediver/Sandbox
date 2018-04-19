@@ -12,9 +12,9 @@ func inspect<T>(_ body: () throws -> T) -> T! {
 }
 
 let f = Function.Value(
-    input: Credit(),
+    input: Credit(), Credit(),
     output: Nothing(),
-    body: { value in dump(value); return Nothing.Value() }
+    body: { c1, c2 in dump(c1); dump(c2); return Nothing.Value() }
 )
 
-f.body(Credit.Value(amount: 10))
+f.body([Credit.Value(amount: 10), Credit.Value(amount: 20)])
