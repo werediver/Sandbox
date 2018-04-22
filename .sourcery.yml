@@ -1,6 +1,0 @@
-sources:
-  - Sandbox
-templates:
-  - Sourcery
-output:
-  - Sourcery
