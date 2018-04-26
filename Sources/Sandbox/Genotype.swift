@@ -1,11 +1,11 @@
 protocol GenotypeIterating {
 
-    func next() -> Int?
+    func next<T>(_ body: (Int) throws -> T) throws -> T
 }
 
 struct Genotype {
 
-    let codons: [Int]
+    var codons: [Int]
 
     init(_ codons: [Int]) {
         self.codons = codons
@@ -22,14 +22,19 @@ struct Genotype {
             self.genotype = genotype
         }
 
-        func next() -> Int? {
+        func next<T>(_ body: (Int) throws -> T) throws -> T {
             guard offset < genotype.codons.count
-            else { return nil }
+            else { throw Failure.overrun }
 
             let codon = genotype.codons[offset]
             offset += 1
 
-            return codon
+            return try body(codon)
         }
+    }
+
+    enum Failure: Error {
+
+        case overrun
     }
 }

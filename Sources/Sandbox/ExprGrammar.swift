@@ -1,55 +1,60 @@
 struct ExprGrammar {
 
-    static func generate(_ rule: GenotypeIterating) -> String { return expr(rule) }
+    enum Failure: Error {
 
-    static func expr(_ rule: GenotypeIterating) -> String {
+        case invalidGenotype
+    }
+
+    static func generate(_ rule: GenotypeIterating) throws -> String { return try expr(rule) }
+
+    static func expr(_ rule: GenotypeIterating) throws -> String {
 
         // EXPR ← EXPR OP EXPR
         //      / VAR
 
-        let result: String
-        switch rule.next().map({ $0 % 2 }) {
-        case 0?:
-            result = expr(rule) + op(rule) + expr(rule)
-        case 1?:
-            result = variable(rule)
-        default:
-            result = "ERROR"
+        return try rule.next { codon in
+            switch codon % 2 {
+            case 0:
+                return try expr(rule) + op(rule) + expr(rule)
+            case 1:
+                return try variable(rule)
+            default:
+                throw Failure.invalidGenotype
+            }
         }
-        return result
     }
 
-    static func op(_ rule: GenotypeIterating) -> String {
+    static func op(_ rule: GenotypeIterating) throws -> String {
 
         // OP ← "+" / "-" / "*" / "/"
 
-        let result: String
-        switch rule.next().map({ $0 % 4 }) {
-        case 0?:
-            result = "+"
-        case 1?:
-            result = "-"
-        case 2?:
-            result = "*"
-        case 3?:
-            result = "/"
-        default:
-            result = "ERROR"
+        return try rule.next { codon in
+            switch codon % 4 {
+            case 0:
+                return "+"
+            case 1:
+                return "-"
+            case 2:
+                return "*"
+            case 3:
+                return "/"
+            default:
+                throw Failure.invalidGenotype
+            }
         }
-        return result
     }
 
-    static func variable(_ rule: GenotypeIterating) -> String {
+    static func variable(_ rule: GenotypeIterating) throws -> String {
 
         // VAR ← "x"
 
-        let result: String
-        switch rule.next().map({ $0 % 1 }) {
-        case 0?:
-            result = "x"
-        default:
-            result = "ERROR"
+        return try rule.next { codon in
+            switch codon % 1 {
+            case 0:
+                return "x"
+            default:
+                throw Failure.invalidGenotype
+            }
         }
-        return result
     }
 }
