@@ -11,7 +11,7 @@ final class SubtreeScanner: GenotypeIterating {
         self.subtreeSize = [Int](repeating: 0, count: genotype.codons.count)
     }
 
-    func next<T>(_ body: (Int) throws -> T) throws -> T {
+    func next<T>(below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
         guard offset < genotype.codons.count
         else { throw Failure.overrun }
 
@@ -20,7 +20,7 @@ final class SubtreeScanner: GenotypeIterating {
         let codon = genotype.codons[offset]
         offset += 1
 
-        let result = try body(codon)
+        let result = try body(codon % upperBound)
 
         let subtreeRootOffset = offsetStack.removeLast()
         subtreeSize[subtreeRootOffset] = offset - subtreeRootOffset

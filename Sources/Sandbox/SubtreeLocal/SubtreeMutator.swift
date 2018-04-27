@@ -11,11 +11,9 @@ final class SubtreeMutator: GenotypeIterating {
         self.genotype = genotype
         self.targetSubtreeOffset = targetSubtreeOffset
         self.targetSubtreeSize = targetSubtreeSize
-        print("Target subtree offset: \(targetSubtreeOffset)")
-        print("Target subtree size: \(targetSubtreeSize)")
     }
 
-    func next<T>(_ body: (Int) throws -> T) throws -> T {
+    func next<T>(below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
         if offset == targetSubtreeOffset {
             genotype.codons[offset] = rand()
         }
@@ -33,12 +31,11 @@ final class SubtreeMutator: GenotypeIterating {
         let codon = genotype.codons[offset]
         offset += 1
 
-        let result = try body(codon)
+        let result = try body(codon % upperBound)
 
         let subtreeRootOffset = offsetStack.removeLast()
         if subtreeRootOffset == targetSubtreeOffset {
             let newTargetSubtreeSize = offset - subtreeRootOffset
-            print("New target subtree size: \(newTargetSubtreeSize)")
             if newTargetSubtreeSize < targetSubtreeSize {
                 genotype.codons.removeSubrange(offset ..< targetSubtreeOffset + targetSubtreeSize)
             }

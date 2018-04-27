@@ -1,6 +1,6 @@
 protocol GenotypeIterating {
 
-    func next<T>(_ body: (Int) throws -> T) throws -> T
+    func next<T>(below upperBound: Int, _ body: (Int) throws -> T) throws -> T
 }
 
 struct Genotype {
@@ -22,14 +22,14 @@ struct Genotype {
             self.genotype = genotype
         }
 
-        func next<T>(_ body: (Int) throws -> T) throws -> T {
+        func next<T>(below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
             guard offset < genotype.codons.count
             else { throw Failure.overrun }
 
             let codon = genotype.codons[offset]
             offset += 1
 
-            return try body(codon)
+            return try body(codon % upperBound)
         }
     }
 

@@ -1,8 +1,8 @@
-struct ExprGrammar {
+enum ExprGrammar: Grammar {
 
     enum Failure: Error {
 
-        case invalidGenotype
+        case invalidCodon
     }
 
     static func generate(_ rule: GenotypeIterating) throws -> String { return try expr(rule) }
@@ -12,14 +12,14 @@ struct ExprGrammar {
         // EXPR ← EXPR OP EXPR
         //      / VAR
 
-        return try rule.next { codon in
-            switch codon % 2 {
+        return try rule.next(below: 2) { codon in
+            switch codon {
             case 0:
-                return try expr(rule) + op(rule) + expr(rule)
+                return try "(" + expr(rule) + op(rule) + expr(rule) + ")"
             case 1:
                 return try variable(rule)
             default:
-                throw Failure.invalidGenotype
+                throw Failure.invalidCodon
             }
         }
     }
@@ -28,8 +28,8 @@ struct ExprGrammar {
 
         // OP ← "+" / "-" / "*" / "/"
 
-        return try rule.next { codon in
-            switch codon % 4 {
+        return try rule.next(below: 4) { codon in
+            switch codon {
             case 0:
                 return "+"
             case 1:
@@ -39,7 +39,7 @@ struct ExprGrammar {
             case 3:
                 return "/"
             default:
-                throw Failure.invalidGenotype
+                throw Failure.invalidCodon
             }
         }
     }
@@ -48,12 +48,12 @@ struct ExprGrammar {
 
         // VAR ← "x"
 
-        return try rule.next { codon in
+        return try rule.next(below: 1) { codon in
             switch codon % 1 {
             case 0:
                 return "x"
             default:
-                throw Failure.invalidGenotype
+                throw Failure.invalidCodon
             }
         }
     }

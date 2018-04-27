@@ -1,53 +1,27 @@
-struct RandomGenotypeFactory {
-
-    func make() -> Genotype {
-        let iterator = RandomIterator()
-        _ = try? ExprGrammar.generate(iterator)
-        return Genotype(iterator.codons)
-    }
-
-    final class RandomIterator: GenotypeIterating {
-
-        var codons = [Int]()
-
-        func next<T>(_ body: (Int) throws -> T) throws -> T {
-            let codon = rand()
-            codons.append(codon)
-            return try body(codon)
-        }
-    }
-}
-
-struct PhenotypeFactory {
-
-    func make(from genotype: Genotype) -> String? {
-        let iterator = genotype.makeIterator()
-        let phenotype = try? ExprGrammar.generate(iterator)
-        return phenotype
-    }
-}
-
-func mutate(genotype: Genotype) throws -> Genotype {
+func mutate(genotype: Genotype, grammar: Grammar.Type) throws -> Genotype {
     let subtreeScanner = SubtreeScanner(genotype)
-    _ = try ExprGrammar.generate(subtreeScanner)
-    print("Genotype:     \(genotype.codons)")
-    print("Subtree size: \(subtreeScanner.subtreeSize)")
+    _ = try grammar.generate(subtreeScanner)
 
     let targetSubtreeOffset = rand(below: genotype.codons.count)
     let targetSubtreeSize = subtreeScanner.subtreeSize[targetSubtreeOffset]
 
     let mutator = SubtreeMutator(genotype, subtree: targetSubtreeOffset, size: targetSubtreeSize)
 
-    _ = try ExprGrammar.generate(mutator)
+    _ = try grammar.generate(mutator)
 
     return mutator.genotype
 }
 
+let grammar = AntGrammar.self
+
 for _ in 0 ..< 10 {
-    let genotype = RandomGenotypeFactory().make()
-    let phenotype = PhenotypeFactory().make(from: genotype)
-    print(" > " + (phenotype ?? "nil"))
-    let mutated = try! mutate(genotype: genotype)
-    let mutatedPhenotype = PhenotypeFactory().make(from: mutated)
-    print("x> " + (mutatedPhenotype ?? "nil"))
+    let genotype = try! RandomGenotypeFactory(grammar: grammar).make()
+    let phenotypeFactory = PhenotypeFactory(grammar: grammar)
+    let phenotype = try! phenotypeFactory.make(from: genotype)
+
+    let mutated = try! mutate(genotype: genotype, grammar: grammar)
+    let mutatedPhenotype = try! phenotypeFactory.make(from: mutated)
+
+    print("-> " + phenotype)
+    print("x> " + mutatedPhenotype)
 }
