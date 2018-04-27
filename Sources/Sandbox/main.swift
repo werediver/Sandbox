@@ -1,4 +1,4 @@
-func mutate(genotype: Genotype, grammar: Grammar.Type) throws -> Genotype {
+func mutate<Grammar: SomeGrammar>(genotype: Genotype, grammar: Grammar.Type) throws -> Genotype {
     let subtreeScanner = SubtreeScanner(genotype)
     _ = try grammar.generate(subtreeScanner)
 
@@ -12,7 +12,7 @@ func mutate(genotype: Genotype, grammar: Grammar.Type) throws -> Genotype {
     return mutator.genotype
 }
 
-let grammar = AntGrammar.self
+let grammar = Ant.Grammar.self
 
 for _ in 0 ..< 10 {
     let genotype = try! RandomGenotypeFactory(grammar: grammar).make()
@@ -22,6 +22,6 @@ for _ in 0 ..< 10 {
     let mutated = try! mutate(genotype: genotype, grammar: grammar)
     let mutatedPhenotype = try! phenotypeFactory.make(from: mutated)
 
-    print("-> " + phenotype)
-    print("x> " + mutatedPhenotype)
+    print("Original:\n\(phenotype)")
+    print("Mutated:\n\(mutatedPhenotype)")
 }

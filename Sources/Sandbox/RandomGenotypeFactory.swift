@@ -1,4 +1,4 @@
-struct RandomGenotypeFactory {
+struct RandomGenotypeFactory<Grammar: SomeGrammar> {
 
     private let grammar: Grammar.Type
 

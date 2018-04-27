@@ -1,4 +1,4 @@
-enum ExprGrammar: Grammar {
+enum ExprGrammar: SomeGrammar {
 
     enum Failure: Error {
 
