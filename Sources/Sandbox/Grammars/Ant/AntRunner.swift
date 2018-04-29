@@ -1,30 +1,41 @@
 final class AntRunner {
 
-    private let plan: [AntLine]
+    private let ant: AntProg
     private let env: AntControlling
 
     init(_ ant: AntProg, _ env: AntControlling) {
-        self.plan = AntRunner.plan(ant)
+        self.ant = ant
         self.env = env
     }
 
-    func run() {
-        plan.forEach { line in
-            switch line {
-            case let .cond(cond):
-                if env.foodAhead() {
-                    execute(cond.right)
-                } else {
-                    execute(cond.wrong)
-                }
-            case let .op(op):
-                execute(op)
-            }
-            env.report()
+    func run() { ant.accept(self) }
+}
+
+extension AntRunner: AntBehaviorVisitor {
+
+    func visit(_ prog: AntProg) {
+        prog.line.accept(self)
+        prog.prog?.accept(self)
+    }
+
+    func visit(_ line: AntLine) {
+        switch line {
+        case let .cond(cond):
+            cond.accept(self)
+        case let .op(op):
+            op.accept(self)
         }
     }
 
-    private func execute(_ op: AntOp) {
+    func visit(_ cond: AntCond) {
+        if env.foodAhead() {
+            cond.right.accept(self)
+        } else {
+            cond.wrong.accept(self)
+        }
+    }
+
+    func visit(_ op: AntOp) {
         switch op {
         case .move:
             env.moveForward()
@@ -33,32 +44,6 @@ final class AntRunner {
         case .right:
             env.turnRight()
         }
-    }
-
-    private static func plan(_ prog: AntProg) -> [AntLine] {
-
-        final class LineCollector: AntBehaviorVisitor {
-
-            private(set) var lines = [AntLine]()
-
-            func visit(_ prog: AntProg) {
-                prog.line.accept(self)
-                prog.prog?.accept(self)
-            }
-
-            func visit(_ line: AntLine) {
-                lines.append(line)
-            }
-
-            func visit(_ cond: AntCond) {}
-
-            func visit(_ op: AntOp) {}
-        }
-
-        let lineCollector = LineCollector()
-
-        prog.accept(lineCollector)
-
-        return lineCollector.lines
+        env.report()
     }
 }
