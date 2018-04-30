@@ -8,5 +8,11 @@ let package = Package(
         .target(
             name: "Sandbox",
             dependencies: []),
+        .target(
+            name: "Ant",
+            dependencies: ["Sandbox"]),
+        .target(
+            name: "Sandbox CLI",
+            dependencies: ["Sandbox", "Ant"])
     ]
 )

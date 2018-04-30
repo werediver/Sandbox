@@ -1,23 +1,13 @@
-import Foundation
+public final class AntEnvironment: AntControllable {
 
-protocol AntControlling {
+    public typealias OnChange = (AntEnvironment) -> Void
 
-    func moveForward()
-    func turnLeft()
-    func turnRight()
-
-    func foodAhead() -> Bool
-
-    func report()
-}
-
-final class AntEnvironment: AntControlling {
-
-    private(set) var field: AntField
+    public private(set) var field: AntField
     private(set) var antPosition: AntField.Index = (0, 0)
     private(set) var antDirection: AntDirection = .right
-    private(set) var antScore = 0
-    private(set) var stepCount = 0
+    public private(set) var antScore = 0
+    public private(set) var stepCount = 0
+    private let onChange: OnChange?
 
     var nextAntPosition: AntField.Index {
         return (
@@ -26,18 +16,13 @@ final class AntEnvironment: AntControlling {
         )
     }
 
-    init(field: Matrix<AntFieldItem>) {
+    public init(field: AntField, onChange: OnChange? = nil) {
         self.field = field
         self.field[antPosition] = .ant(antDirection)
+        self.onChange = onChange
     }
 
-    func report() {
-        clearScreen()
-        print(field)
-        Thread.sleep(forTimeInterval: 0.1)
-    }
-
-    func moveForward() {
+    public func moveForward() {
         field[antPosition] = .empty
         antPosition = nextAntPosition
         if case .food = field[antPosition] {
@@ -45,19 +30,24 @@ final class AntEnvironment: AntControlling {
         }
         field[antPosition] = .ant(antDirection)
         stepCount += 1
+        onChange?(self)
     }
 
-    func turnLeft() {
+    public func turnLeft() {
         antDirection = antDirection.toLeft
+        field[antPosition] = .ant(antDirection)
         stepCount += 1
+        onChange?(self)
     }
 
-    func turnRight() {
+    public func turnRight() {
         antDirection = antDirection.toRight
+        field[antPosition] = .ant(antDirection)
         stepCount += 1
+        onChange?(self)
     }
 
-    func foodAhead() -> Bool {
+    public func foodAhead() -> Bool {
         if case .food = field[nextAntPosition] {
             return true
         } else {

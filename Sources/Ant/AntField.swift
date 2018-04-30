@@ -1,12 +1,12 @@
-typealias AntField = Matrix<AntFieldItem>
+public typealias AntField = Matrix<AntFieldItem>
 
-enum AntFieldItem: CustomStringConvertible {
+public enum AntFieldItem: CustomStringConvertible {
 
     case empty
     case food
     case ant(AntDirection)
 
-    var description: String {
+    public var description: String {
         switch self {
         case .empty:
             return "·"
@@ -27,7 +27,7 @@ enum AntFieldItem: CustomStringConvertible {
     }
 }
 
-enum AntDirection {
+public enum AntDirection {
 
     case right
     case up

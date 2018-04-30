@@ -11,7 +11,7 @@ protocol AntBehaviorVisitor {
     func visit(_ op: AntOp)
 }
 
-final class AntProg: AntBehavior, CustomStringConvertible {
+public final class AntProg: AntBehavior, CustomStringConvertible {
 
     let line: AntLine
     let prog: AntProg?
@@ -23,19 +23,19 @@ final class AntProg: AntBehavior, CustomStringConvertible {
 
     func accept(_ visitor: AntBehaviorVisitor) { visitor.visit(self) }
 
-    var description: String {
+    public var description: String {
         return "\(line)\n\(prog.map(String.init(describing:)) ?? "")"
     }
 }
 
-enum AntLine: AntBehavior, CustomStringConvertible {
+public enum AntLine: AntBehavior, CustomStringConvertible {
 
     case cond(AntCond)
     case op(AntOp)
 
     func accept(_ visitor: AntBehaviorVisitor) { visitor.visit(self) }
 
-    var description: String {
+    public var description: String {
         switch self {
         case let .cond(cond):
             return "\(cond)"
@@ -45,19 +45,19 @@ enum AntLine: AntBehavior, CustomStringConvertible {
     }
 }
 
-struct AntCond: AntBehavior, CustomStringConvertible {
+public struct AntCond: AntBehavior, CustomStringConvertible {
 
     let right: AntOp
     let wrong: AntOp
 
     func accept(_ visitor: AntBehaviorVisitor) { visitor.visit(self) }
 
-    var description: String {
+    public var description: String {
         return "if food_ahead { \(right) } else { \(wrong) }"
     }
 }
 
-enum AntOp: AntBehavior {
+public enum AntOp: AntBehavior {
 
     case left
     case right

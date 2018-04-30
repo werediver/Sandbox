@@ -1,4 +1,4 @@
-protocol SomeGrammar {
+public protocol SomeGrammar {
 
     associatedtype Result
 

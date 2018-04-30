@@ -1,9 +1,16 @@
-protocol GenotypeIterating {
+public protocol AnyGenotype {
+
+    var codons: [Int] { get set }
+
+    func makeIterator() -> GenotypeIterating
+}
+
+public protocol GenotypeIterating {
 
     func next<T>(below upperBound: Int, _ body: (Int) throws -> T) throws -> T
 }
 
-struct Genotype {
+struct Genotype: AnyGenotype {
 
     var codons: [Int]
 

@@ -1,14 +1,23 @@
-final class AntRunner {
+public protocol AntControllable {
+
+    func moveForward()
+    func turnLeft()
+    func turnRight()
+
+    func foodAhead() -> Bool
+}
+
+public struct AntRunner {
 
     private let ant: AntProg
-    private let env: AntControlling
+    private let env: AntControllable
 
-    init(_ ant: AntProg, _ env: AntControlling) {
+    public init(_ ant: AntProg, _ env: AntControllable) {
         self.ant = ant
         self.env = env
     }
 
-    func run() { ant.accept(self) }
+    public func run() { ant.accept(self) }
 }
 
 extension AntRunner: AntBehaviorVisitor {
@@ -44,6 +53,5 @@ extension AntRunner: AntBehaviorVisitor {
         case .right:
             env.turnRight()
         }
-        env.report()
     }
 }

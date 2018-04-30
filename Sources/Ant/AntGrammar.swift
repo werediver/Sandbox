@@ -1,11 +1,14 @@
-enum AntGrammar: SomeGrammar {
+import protocol Sandbox.SomeGrammar
+import protocol Sandbox.GenotypeIterating
+
+public enum AntGrammar: SomeGrammar {
 
     enum Failure: Error {
 
         case invalidCodon
     }
 
-    static func generate(_ rule: GenotypeIterating) throws -> AntProg {
+    public static func generate(_ rule: GenotypeIterating) throws -> AntProg {
         return try prog(rule)
     }
 

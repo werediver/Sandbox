@@ -1,12 +1,12 @@
-struct RandomGenotypeFactory<Grammar: SomeGrammar> {
+public struct RandomGenotypeFactory<Grammar: SomeGrammar> {
 
     private let grammar: Grammar.Type
 
-    init(grammar: Grammar.Type) {
+    public init(grammar: Grammar.Type) {
         self.grammar = grammar
     }
 
-    func make() throws -> Genotype {
+    public func make() throws -> AnyGenotype {
         let iterator = RandomIterator()
         _ = try grammar.generate(iterator)
         return Genotype(iterator.codons)
@@ -17,7 +17,7 @@ struct RandomGenotypeFactory<Grammar: SomeGrammar> {
         var codons = [Int]()
 
         func next<T>(below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
-            let codon = rand(below: 128)
+            let codon = rand(below: 100)
             codons.append(codon)
             return try body(codon % upperBound)
         }
