@@ -10,11 +10,13 @@ public final class AntEvaluator {
         let env = envFactory.make(onChange: onChange)
         let runner = AntRunner(ant, env)
 
-        for _ in 0 ..< 600 {
+        var count = 600
+        while count > 0, env.foodLeft > 0 {
             runner.run()
+            count -= 1
         }
 
-        let score = Double(env.antScore)
+        let score = Double(env.antScore) / Double(env.stepCount)
 
         return score
     }

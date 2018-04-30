@@ -3,8 +3,10 @@ public final class AntEnvironment: AntControllable {
     public typealias OnChange = (AntEnvironment) -> Void
 
     public private(set) var field: AntField
+    private let initialFoodCount: Int
     private(set) var antPosition: AntField.Index = (0, 0)
     private(set) var antDirection: AntDirection = .right
+    public var foodLeft: Int { return initialFoodCount - antScore }
     public private(set) var antScore = 0
     public private(set) var stepCount = 0
     private let onChange: OnChange?
@@ -20,6 +22,14 @@ public final class AntEnvironment: AntControllable {
         self.field = field
         self.field[antPosition] = .ant(antDirection)
         self.onChange = onChange
+
+        var foodCount = 0
+        for item in field.items {
+            if case .food = item {
+                foodCount += 1
+            }
+        }
+        self.initialFoodCount = foodCount
     }
 
     public func moveForward() {

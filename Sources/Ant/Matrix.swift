@@ -5,7 +5,7 @@ public struct Matrix<Item> {
 
     public let size: Size
 
-    private var items: [Item]
+    public private(set) var items: [Item]
 
     public init(repeating item: Item, size: Size) {
         self.size = size
