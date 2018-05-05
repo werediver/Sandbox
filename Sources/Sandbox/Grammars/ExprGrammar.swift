@@ -1,6 +1,6 @@
 enum ExprGrammar: SomeGrammar {
 
-    enum Failure: Error {
+    public enum Failure: Error {
 
         case invalidCodon
     }
@@ -12,7 +12,7 @@ enum ExprGrammar: SomeGrammar {
         // EXPR ← EXPR OP EXPR
         //      / VAR
 
-        return try rule.next(below: 2) { codon in
+        return try rule.next(tag: "prog", below: 2) { codon in
             switch codon {
             case 0:
                 return try "(" + expr(rule) + op(rule) + expr(rule) + ")"
@@ -28,7 +28,7 @@ enum ExprGrammar: SomeGrammar {
 
         // OP ← "+" / "-" / "*" / "/"
 
-        return try rule.next(below: 4) { codon in
+        return try rule.next(tag: "op", below: 4) { codon in
             switch codon {
             case 0:
                 return "+"
@@ -48,7 +48,7 @@ enum ExprGrammar: SomeGrammar {
 
         // VAR ← "x"
 
-        return try rule.next(below: 1) { codon in
+        return try rule.next(tag: "variable", below: 1) { codon in
             switch codon % 1 {
             case 0:
                 return "x"

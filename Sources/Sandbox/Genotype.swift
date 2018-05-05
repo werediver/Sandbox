@@ -7,7 +7,7 @@ public protocol AnyGenotype {
 
 public protocol GenotypeIterating {
 
-    func next<T>(below upperBound: Int, _ body: (Int) throws -> T) throws -> T
+    func next<T>(tag: String, below upperBound: Int, _ body: (Int) throws -> T) throws -> T
 }
 
 struct Genotype: AnyGenotype {
@@ -29,7 +29,7 @@ struct Genotype: AnyGenotype {
             self.genotype = genotype
         }
 
-        func next<T>(below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
+        func next<T>(tag: String, below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
             guard offset < genotype.codons.count
             else { throw Failure.overrun }
 
@@ -40,7 +40,7 @@ struct Genotype: AnyGenotype {
         }
     }
 
-    enum Failure: Error {
+    public enum Failure: Error {
 
         case overrun
     }

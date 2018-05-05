@@ -2,7 +2,7 @@ import Foundation
 
 struct AntFieldLoader {
 
-    enum Failure: Error {
+    public enum Failure: Error {
 
         case cannotOpenFileForReading
         case invalidEncoding

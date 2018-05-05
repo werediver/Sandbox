@@ -3,7 +3,7 @@ import protocol Sandbox.GenotypeIterating
 
 public enum AntGrammar: SomeGrammar {
 
-    enum Failure: Error {
+    public enum Failure: Error {
 
         case invalidCodon
     }
@@ -17,7 +17,7 @@ public enum AntGrammar: SomeGrammar {
         // PROG → LINE
         //      / LINE PROG
 
-        return try rule.next(below: 2) { codon in
+        return try rule.next(tag: "prog", below: 2) { codon in
             switch codon {
             case 0:
                 return try AntProg(line(rule))
@@ -33,7 +33,7 @@ public enum AntGrammar: SomeGrammar {
 
         // LINE → COND / OP
 
-        return try rule.next(below: 2) { codon in
+        return try rule.next(tag: "line", below: 2) { codon in
             switch codon {
             case 0:
                 return try .cond(cond(rule))
@@ -49,7 +49,7 @@ public enum AntGrammar: SomeGrammar {
 
         // COND → IF_FOOD_AHEAD(OP, ELSE: OP)
 
-        return try rule.next(below: 1) { codon in
+        return try rule.next(tag: "cond", below: 1) { codon in
             switch codon {
             case 0:
                 return try AntCond(right: op(rule), wrong: op(rule))
@@ -63,7 +63,7 @@ public enum AntGrammar: SomeGrammar {
 
         // OP → TURN_LEFT / TURN_RIGHT / MOVE
 
-        return try rule.next(below: 3) { codon in
+        return try rule.next(tag: "op", below: 3) { codon in
             switch codon {
             case 0:
                 return .left

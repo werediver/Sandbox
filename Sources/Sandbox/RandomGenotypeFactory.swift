@@ -16,7 +16,7 @@ public struct RandomGenotypeFactory<Grammar: SomeGrammar> {
 
         var codons = [Int]()
 
-        func next<T>(below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
+        func next<T>(tag: String, below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
             let codon = rand(below: 100)
             codons.append(codon)
             return try body(codon % upperBound)

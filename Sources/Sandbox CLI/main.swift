@@ -2,20 +2,6 @@ import Sandbox
 import Ant
 import class Foundation.Thread
 
-func mutate<Grammar: SomeGrammar>(_ genotype: AnyGenotype, grammar: Grammar.Type) throws -> AnyGenotype {
-    let subtreeScanner = SubtreeScanner(genotype)
-    _ = try grammar.generate(subtreeScanner)
-
-    let targetSubtreeOffset = rand(below: genotype.codons.count)
-    let targetSubtreeSize = subtreeScanner.subtreeSize[targetSubtreeOffset]
-
-    let mutator = SubtreeMutator(genotype, subtree: targetSubtreeOffset, size: targetSubtreeSize)
-
-    _ = try grammar.generate(mutator)
-
-    return mutator.genotype
-}
-
 func clearScreen() { print("\u{1B}[2J") }
 
 final class AntGenotypeEvaluator {
@@ -58,9 +44,9 @@ func reportBest(of pop: Population) {
     }
 }
 
-let antGenotypeEvaluator = AntGenotypeEvaluator()
-
 let randomGenotypeFactory = RandomGenotypeFactory(grammar: AntGrammar.self)
+let mutation = Mutation(grammar: AntGrammar.self)
+let antGenotypeEvaluator = AntGenotypeEvaluator()
 
 let popCount = 500
 let keepCount = Int((Double(popCount) * 0.25).rounded())
@@ -73,7 +59,7 @@ reportBest(of: pop)
 for gen in 0 ..< 50 {
     print("Generation \(gen + 1)")
     pop.items = Array(pop.items.prefix(keepCount)) + pop.items.prefix(mutateCount).map { item in
-        let mutatedGenotype = try! mutate(item.genotype, grammar: AntGrammar.self)
+        let mutatedGenotype = try! mutation.apply(to: item.genotype)
         return Population.Item(genotype: mutatedGenotype, score: nil)
     }
     pop.evaluateAll()
