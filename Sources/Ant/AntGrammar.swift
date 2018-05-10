@@ -8,51 +8,38 @@ public enum AntGrammar: SomeGrammar {
         case invalidCodon
     }
 
-    public static func generate(_ rule: GenotypeIterating) throws -> AntProg {
-        return try prog(rule)
+    public static func generate(_ rule: GenotypeIterating) throws -> AntBlock {
+        return try block(rule)
     }
 
-    static func prog(_ rule: GenotypeIterating) throws -> AntProg {
+    static func block(_ rule: GenotypeIterating) throws -> AntBlock {
 
-        // PROG → LINE
-        //      / LINE PROG
+        // BLOCK → STMT
+        //       / STMT BLOCK
 
-        return try rule.next(tag: "prog", below: 2) { codon in
+        return try rule.next(tag: "lines", below: 2) { codon in
             switch codon {
             case 0:
-                return try AntProg(line(rule))
+                return try AntBlock(statement: statement(rule), more: nil)
             case 1:
-                return try AntProg(line(rule), prog(rule))
+                return try AntBlock(statement: statement(rule), more: block(rule))
             default:
                 throw Failure.invalidCodon
             }
         }
     }
 
-    static func line(_ rule: GenotypeIterating) throws -> AntLine {
+    static func statement(_ rule: GenotypeIterating) throws -> AntStatement {
 
-        // LINE → COND / OP
+        // STMT → OP
+        //      / IF_FOOD_AHEAD(BLOCK, ELSE: BLOCK)
 
         return try rule.next(tag: "line", below: 2) { codon in
             switch codon {
             case 0:
-                return try .cond(cond(rule))
-            case 1:
                 return try .op(op(rule))
-            default:
-                throw Failure.invalidCodon
-            }
-        }
-    }
-
-    static func cond(_ rule: GenotypeIterating) throws -> AntCond {
-
-        // COND → IF_FOOD_AHEAD(OP, ELSE: OP)
-
-        return try rule.next(tag: "cond", below: 1) { codon in
-            switch codon {
-            case 0:
-                return try AntCond(right: op(rule), wrong: op(rule))
+            case 1:
+                return try .cond(AntCond(right: block(rule), wrong: block(rule)))
             default:
                 throw Failure.invalidCodon
             }
@@ -75,5 +62,36 @@ public enum AntGrammar: SomeGrammar {
                 throw Failure.invalidCodon
             }
         }
+    }
+
+    public static var referenceAnt: AntBlock {
+        return AntBlock.seq(
+                .cond(AntCond(
+                    right: AntBlock.seq(
+                        .op(.move)
+                    ),
+                    wrong: AntBlock.seq(
+                        .op(.right),
+                        .cond(AntCond(
+                            right: AntBlock.seq(
+                                .op(.move)
+                            ),
+                            wrong: AntBlock.seq(
+                                .op(.right),
+                                .op(.right),
+                                .cond(AntCond(
+                                    right: AntBlock.seq(
+                                        .op(.move)
+                                    ),
+                                    wrong: AntBlock.seq(
+                                        .op(.right),
+                                        .op(.move)
+                                    )
+                                ))
+                            )
+                        ))
+                    )
+                ))
+            )
     }
 }

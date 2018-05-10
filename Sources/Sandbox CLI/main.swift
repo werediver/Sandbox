@@ -1,8 +1,16 @@
 import Sandbox
 import Ant
 import class Foundation.Thread
+import func Foundation.exit
 
-func clearScreen() { print("\u{1B}[2J") }
+func clearScrollBuffer() { print("\u{1B}[3J") }
+
+func clearScreen() {
+    clearScrollBuffer()
+    print("\u{1B}[2J")
+}
+
+//func clearLine() { print("\u{1B}[") }
 
 final class AntGenotypeEvaluator {
 
@@ -17,6 +25,10 @@ final class AntGenotypeEvaluator {
         guard let ant = try? antFactory.make(from: genotype)
         else { return -Double.infinity }
 
+        return evaluate(ant, demo: demo)
+    }
+
+    func evaluate(_ ant: AntBlock, demo: Bool) -> Double {
         let score = evaluator.evaluate(ant, onChange: demo ? AntGenotypeEvaluator.draw : nil)
 
         if demo {
@@ -34,39 +46,113 @@ final class AntGenotypeEvaluator {
     }
 }
 
-func reportBest(of pop: Population) {
+func reportStats(_ pop: Population) {
+    var lengthMap = [Int: Int]()
+    for item in pop.items {
+        let length = item.genotype.codons.count
+        lengthMap[length] = (lengthMap[length] ?? 0) + 1
+    }
+    for length in lengthMap.keys.sorted() {
+        let count = lengthMap[length] ?? 0
+        let bar = repeatElement("#", count: count).joined()
+        print(String.init(format: "%3i:%3i %@", length, count, bar))
+    }
+
     if let best = pop.best {
-        print("Score: \(best.score ?? .nan)")
+        print("Average score: \(pop.averageScore)")
+        print("Best score: \(best.score ?? .nan)")
+        print("Best genotype length: \(best.genotype.codons.count)")
 
-        let ant = try! PhenotypeFactory(grammar: AntGrammar.self).make(from: best.genotype)
+        //let ant = try! PhenotypeFactory(grammar: AntGrammar.self).make(from: best.genotype)
 
-        print("Ant:\n\(ant)")
+        //print("Best ant:\n\(ant)")
     }
 }
 
-let randomGenotypeFactory = RandomGenotypeFactory(grammar: AntGrammar.self)
-let mutation = Mutation(grammar: AntGrammar.self)
+let codonsCountLimit = 200
+let randomGenotypeFactory = RandomGenotypeFactory(grammar: AntGrammar.self, limit: codonsCountLimit)
+let tournament = Tournament(grammar: AntGrammar.self, size: 5)
+let crossover = Crossover(grammar: AntGrammar.self, limit: codonsCountLimit)
+let mutation = Mutation(grammar: AntGrammar.self, limit: codonsCountLimit)
 let antGenotypeEvaluator = AntGenotypeEvaluator()
 
-let popCount = 500
-let keepCount = Int((Double(popCount) * 0.25).rounded())
-let mutateCount = popCount - keepCount
+let p = (crossover: 0.9, mutation: 0.5)
+let popCount = 1000
+//let eliteCount = Int((Double(popCount) * 0.25).rounded())
+let eliteCount = 1
+let mutateCount = popCount - eliteCount
 
 let pop = try Population(randomGenotypeFactory, count: popCount, evaluation: antGenotypeEvaluator.evaluate)
 pop.evaluateAll()
 pop.sort()
-reportBest(of: pop)
-for gen in 0 ..< 50 {
+reportStats(pop)
+
+for gen in 0 ..< 100 {
     print("Generation \(gen + 1)")
-    pop.items = Array(pop.items.prefix(keepCount)) + pop.items.prefix(mutateCount).map { item in
-        let mutatedGenotype = try! mutation.apply(to: item.genotype)
-        return Population.Item(genotype: mutatedGenotype, score: nil)
+
+///*
+    var nextGeneration = Array(pop.items.prefix(eliteCount))
+    while nextGeneration.count < popCount {
+        if urand() < p.crossover {
+            let genotype1 = try tournament.apply(population: pop)
+            let genotype2 = try tournament.apply(population: pop)
+
+            guard var (genotype3, genotype4) = try? crossover.apply(to: genotype1, genotype2)
+            else { continue }
+
+            if urand() < p.mutation {
+                do {
+                    genotype3 = try mutation.apply(to: genotype3)
+                } catch {}
+            }
+            if urand() < p.mutation {
+                do {
+                    genotype4 = try mutation.apply(to: genotype4)
+                } catch {}
+            }
+
+            nextGeneration.append((genotype3, nil))
+            nextGeneration.append((genotype4, nil))
+        } else {
+            var genotype = try tournament.apply(population: pop)
+            if urand() < p.mutation {
+                do {
+                    genotype = try mutation.apply(to: genotype)
+                } catch {
+                    continue
+                }
+            }
+            nextGeneration.append((genotype, nil))
+        }
     }
+    pop.items = nextGeneration
+//*/
+
+/*
+    var nextGeneration = Array(pop.items.prefix(eliteCount))
+    let reusePool = pop.items.prefix(mutateCount)
+    //var offset = 0
+    while nextGeneration.count < popCount {
+        //let genotype = reusePool[offset % reusePool.count].genotype
+        //defer { offset += 1 }
+        let genotype = try tournament.apply(population: pop)
+        do {
+            let mutatedGenotype = try mutation.apply(to: genotype)
+            nextGeneration.append(Population.Item(genotype: mutatedGenotype, score: nil))
+        } catch {
+            continue
+        }
+    }
+    pop.items = nextGeneration
+*/
     pop.evaluateAll()
     pop.sort()
-    reportBest(of: pop)
+    reportStats(pop)
 }
 
 if let best = pop.best {
     _ = antGenotypeEvaluator.evaluate(best.genotype, demo: true)
+    print("Genotype length: \(best.genotype.codons.count)")
 }
+
+//_ = antGenotypeEvaluator.evaluate(AntGrammar.referenceAnt, demo: true)

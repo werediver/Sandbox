@@ -9,10 +9,10 @@ public protocol AntControllable {
 
 public struct AntRunner {
 
-    private let ant: AntProg
+    private let ant: AntBlock
     private let env: AntControllable
 
-    public init(_ ant: AntProg, _ env: AntControllable) {
+    public init(_ ant: AntBlock, _ env: AntControllable) {
         self.ant = ant
         self.env = env
     }
@@ -22,13 +22,13 @@ public struct AntRunner {
 
 extension AntRunner: AntBehaviorVisitor {
 
-    func visit(_ prog: AntProg) {
-        prog.line.accept(self)
-        prog.prog?.accept(self)
+    func visit(_ block: AntBlock) {
+        block.statement.accept(self)
+        block.more?.accept(self)
     }
 
-    func visit(_ line: AntLine) {
-        switch line {
+    func visit(_ statement: AntStatement) {
+        switch statement {
         case let .cond(cond):
             cond.accept(self)
         case let .op(op):

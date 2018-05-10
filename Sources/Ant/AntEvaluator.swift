@@ -6,7 +6,7 @@ public final class AntEvaluator {
         self.envFactory = envFactory
     }
 
-    public func evaluate(_ ant: AntProg, onChange: AntEnvironment.OnChange? = nil) -> Double {
+    public func evaluate(_ ant: AntBlock, onChange: AntEnvironment.OnChange? = nil) -> Double {
         let env = envFactory.make(onChange: onChange)
         let runner = AntRunner(ant, env)
 

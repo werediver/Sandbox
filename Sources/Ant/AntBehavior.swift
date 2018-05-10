@@ -5,30 +5,42 @@ protocol AntBehavior {
 
 protocol AntBehaviorVisitor {
 
-    func visit(_ prog: AntProg)
-    func visit(_ line: AntLine)
+    func visit(_ block: AntBlock)
+    func visit(_ statement: AntStatement)
     func visit(_ cond: AntCond)
     func visit(_ op: AntOp)
 }
 
-public final class AntProg: AntBehavior, CustomStringConvertible {
+public final class AntBlock: AntBehavior, CustomStringConvertible {
 
-    let line: AntLine
-    let prog: AntProg?
+    let statement: AntStatement
+    let more: AntBlock?
 
-    init(_ line: AntLine, _ prog: AntProg? = nil) {
-        self.line = line
-        self.prog = prog
+    init(statement: AntStatement, more: AntBlock?) {
+        self.statement = statement
+        self.more = more
+    }
+
+    static func seq(_ statements: AntStatement...) -> AntBlock {
+        assert(!statements.isEmpty)
+
+        var rest = statements
+        var block = AntBlock(statement: rest.removeLast(), more: nil)
+        while !rest.isEmpty {
+            let last = rest.removeLast()
+            block = AntBlock(statement: last, more: block)
+        }
+        return block
     }
 
     func accept(_ visitor: AntBehaviorVisitor) { visitor.visit(self) }
 
     public var description: String {
-        return "\(line)\n\(prog.map(String.init(describing:)) ?? "")"
+        return "\(statement)\n\(more.map(String.init(describing:)) ?? "")"
     }
 }
 
-public enum AntLine: AntBehavior, CustomStringConvertible {
+public enum AntStatement: AntBehavior, CustomStringConvertible {
 
     case cond(AntCond)
     case op(AntOp)
@@ -47,13 +59,13 @@ public enum AntLine: AntBehavior, CustomStringConvertible {
 
 public struct AntCond: AntBehavior, CustomStringConvertible {
 
-    let right: AntOp
-    let wrong: AntOp
+    let right: AntBlock
+    let wrong: AntBlock
 
     func accept(_ visitor: AntBehaviorVisitor) { visitor.visit(self) }
 
     public var description: String {
-        return "if food_ahead { \(right) } else { \(wrong) }"
+        return "if food_ahead {\n\(right)} else {\n\(wrong)}"
     }
 }
 
