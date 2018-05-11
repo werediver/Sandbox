@@ -62,10 +62,20 @@ public struct AntCond: AntBehavior, CustomStringConvertible {
     let right: AntBlock
     let wrong: AntBlock
 
+    init(right: AntBlock, wrong: AntBlock) {
+        self.right = right
+        self.wrong = wrong
+    }
+
+    init(right: AntOp, wrong: AntOp) {
+        self.right = AntBlock(statement: .op(right), more: nil)
+        self.wrong = AntBlock(statement: .op(wrong), more: nil)
+    }
+
     func accept(_ visitor: AntBehaviorVisitor) { visitor.visit(self) }
 
     public var description: String {
-        return "if food_ahead {\n\(right)} else {\n\(wrong)}"
+        return "if food_ahead {\n\(String(describing: right).indented())} else {\n\(String(describing: wrong).indented())}"
     }
 }
 

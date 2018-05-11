@@ -42,7 +42,7 @@ final class AntGenotypeEvaluator {
     static func draw(_ env: AntEnvironment) {
         clearScreen()
         print(env.field)
-        Thread.sleep(forTimeInterval: 0.01)
+        Thread.sleep(forTimeInterval: 0.02)
     }
 }
 
@@ -69,15 +69,15 @@ func reportStats(_ pop: Population) {
     }
 }
 
-let codonsCountLimit = 200
+let codonsCountLimit = 100
 let randomGenotypeFactory = RandomGenotypeFactory(grammar: AntGrammar.self, limit: codonsCountLimit)
-let tournament = Tournament(grammar: AntGrammar.self, size: 5)
+let tournament = Tournament(grammar: AntGrammar.self, size: 7)
 let crossover = Crossover(grammar: AntGrammar.self, limit: codonsCountLimit)
 let mutation = Mutation(grammar: AntGrammar.self, limit: codonsCountLimit)
 let antGenotypeEvaluator = AntGenotypeEvaluator()
 
-let p = (crossover: 0.9, mutation: 0.5)
-let popCount = 1000
+let p = (crossover: 0.5, mutation: 0.5)
+let popCount = 500
 //let eliteCount = Int((Double(popCount) * 0.25).rounded())
 let eliteCount = 1
 let mutateCount = popCount - eliteCount
@@ -87,42 +87,30 @@ pop.evaluateAll()
 pop.sort()
 reportStats(pop)
 
-for gen in 0 ..< 100 {
+for gen in 0 ..< 50 {
     print("Generation \(gen + 1)")
 
 ///*
     var nextGeneration = Array(pop.items.prefix(eliteCount))
     while nextGeneration.count < popCount {
+        var genotype1 = try tournament.apply(population: pop)
         if urand() < p.crossover {
-            let genotype1 = try tournament.apply(population: pop)
             let genotype2 = try tournament.apply(population: pop)
 
-            guard var (genotype3, genotype4) = try? crossover.apply(to: genotype1, genotype2)
+            guard let (genotype3, genotype4) = try? crossover.apply(to: genotype1, genotype2)
             else { continue }
-
-            if urand() < p.mutation {
-                do {
-                    genotype3 = try mutation.apply(to: genotype3)
-                } catch {}
-            }
-            if urand() < p.mutation {
-                do {
-                    genotype4 = try mutation.apply(to: genotype4)
-                } catch {}
-            }
 
             nextGeneration.append((genotype3, nil))
             nextGeneration.append((genotype4, nil))
         } else {
-            var genotype = try tournament.apply(population: pop)
             if urand() < p.mutation {
                 do {
-                    genotype = try mutation.apply(to: genotype)
+                    genotype1 = try mutation.apply(to: genotype1)
                 } catch {
                     continue
                 }
             }
-            nextGeneration.append((genotype, nil))
+            nextGeneration.append((genotype1, nil))
         }
     }
     pop.items = nextGeneration
