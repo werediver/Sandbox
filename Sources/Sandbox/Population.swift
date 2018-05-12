@@ -4,16 +4,20 @@ public final class Population {
     public typealias Item = (genotype: AnyGenotype, score: Double?)
 
     public var items = [Item]()
+    public var preferredCount: Int
     
     private let evaluate: Evaluation
 
     public init<Grammar>(_ randomGenotypeFactory: RandomGenotypeFactory<Grammar>, count: Int, evaluation: @escaping Evaluation) throws {
         self.evaluate = evaluation
-        self.items.reserveCapacity(count)
+        self.preferredCount = count
+
+        // The extra space is a possible extra individual produced during crossover
+        self.items.reserveCapacity(preferredCount + 1)
 
         var hashSet = Set<Int>()
 
-        for _ in 0 ..< count {
+        while items.count < preferredCount {
             // FIXME: 100
             try attempt(limit: 100) { retry in
                 let (genotype, hash) = try randomGenotypeFactory.make()
@@ -61,6 +65,8 @@ public final class Population {
     }
 
     public var averageScore: Double {
-        return items.reduce(into: 0.0, { result, item in result += item.score ?? 0 }) / Double(items.count)
+        return items.reduce(into: 0.0, { result, item in
+                result += item.score ?? 0 }
+            ) / Double(items.count)
     }
 }

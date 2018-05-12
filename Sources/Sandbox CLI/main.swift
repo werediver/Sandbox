@@ -76,24 +76,29 @@ let crossover = Crossover(grammar: AntGrammar.self, limit: codonsCountLimit)
 let mutation = Mutation(grammar: AntGrammar.self, limit: codonsCountLimit)
 let antGenotypeEvaluator = AntGenotypeEvaluator()
 
-let p = (crossover: 0.5, mutation: 0.5)
-let popCount = 500
-//let eliteCount = Int((Double(popCount) * 0.25).rounded())
-let eliteCount = 1
-let mutateCount = popCount - eliteCount
+let pop = try Population(randomGenotypeFactory, count: 500, evaluation: antGenotypeEvaluator.evaluate)
 
-let pop = try Population(randomGenotypeFactory, count: popCount, evaluation: antGenotypeEvaluator.evaluate)
+let p = (crossover: 0.5, mutation: 0.5)
+//let eliteCount = Int((Double(pop.preferredCount) * 0.25).rounded())
+let eliteCount = 1
+let mutateCount = pop.preferredCount - eliteCount
+
 pop.evaluateAll()
 pop.sort()
 reportStats(pop)
 
-for gen in 0 ..< 50 {
-    print("Generation \(gen + 1)")
-
-///*
+// Form the next generation
+func update(_ pop: Population) throws {
+    // Preserve elite
     var nextGeneration = Array(pop.items.prefix(eliteCount))
-    while nextGeneration.count < popCount {
+    // Fill up to the required size
+    while nextGeneration.count < pop.preferredCount {
+        // Select the base individual
         var genotype1 = try tournament.apply(population: pop)
+        // Decide what operators to apply:
+        // - crossover (select an extra individual)
+        // - mutation
+        // - copy
         if urand() < p.crossover {
             let genotype2 = try tournament.apply(population: pop)
 
@@ -114,25 +119,13 @@ for gen in 0 ..< 50 {
         }
     }
     pop.items = nextGeneration
-//*/
+}
 
-/*
-    var nextGeneration = Array(pop.items.prefix(eliteCount))
-    let reusePool = pop.items.prefix(mutateCount)
-    //var offset = 0
-    while nextGeneration.count < popCount {
-        //let genotype = reusePool[offset % reusePool.count].genotype
-        //defer { offset += 1 }
-        let genotype = try tournament.apply(population: pop)
-        do {
-            let mutatedGenotype = try mutation.apply(to: genotype)
-            nextGeneration.append(Population.Item(genotype: mutatedGenotype, score: nil))
-        } catch {
-            continue
-        }
-    }
-    pop.items = nextGeneration
-*/
+for gen in 0 ..< 50 {
+    print("Generation \(gen + 1)")
+
+    try update(pop)
+
     pop.evaluateAll()
     pop.sort()
     reportStats(pop)
