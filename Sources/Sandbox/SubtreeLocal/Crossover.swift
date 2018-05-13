@@ -1,19 +1,22 @@
-public final class Crossover<Grammar: SomeGrammar> {
+public final class Crossover {
 
-    private let grammar: Grammar.Type
+    typealias GenotypeScanner = (GenotypeIterating) throws -> Void
+
+    private let scan: GenotypeScanner
     private let codonsCountLimit: Int
+    private var attemptsLimit: Int { return 10 }
 
-    public init(grammar: Grammar.Type, limit codonsCountLimit: Int) {
-        self.grammar = grammar
+    public init<Grammar: SomeGrammar>(grammar: Grammar.Type, limit codonsCountLimit: Int) {
+        self.scan = { _ = try grammar.generate($0) }
         self.codonsCountLimit = codonsCountLimit
     }
 
-    public func apply(to genotype1: AnyGenotype, _ genotype2: AnyGenotype, attemptsLimit: Int = 10) throws -> (AnyGenotype, AnyGenotype) {
+    public func apply(to genotype1: AnyGenotype, _ genotype2: AnyGenotype) throws -> (AnyGenotype, AnyGenotype) {
         let mappingIterator1 = MappingIterator(genotype1)
-        _ = try grammar.generate(mappingIterator1)
+        try scan(mappingIterator1)
 
         let mappingIterator2 = MappingIterator(genotype2)
-        _ = try grammar.generate(mappingIterator2)
+        try scan(mappingIterator2)
 
         let tags1 = Set(mappingIterator1.map.map { $0.tag })
         let tags2 = Set(mappingIterator2.map.map { $0.tag })

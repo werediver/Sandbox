@@ -77,60 +77,30 @@ func reportStats(_ pop: Population) {
 
 let codonsCountLimit = 100
 let randomGenotypeFactory = RandomGenotypeFactory(grammar: AntGrammar.self, limit: codonsCountLimit)
-let tournament = Tournament(grammar: AntGrammar.self, size: 7)
+let tournament = Tournament(size: 7)
 let crossover = Crossover(grammar: AntGrammar.self, limit: codonsCountLimit)
 let mutation = Mutation(grammar: AntGrammar.self, limit: codonsCountLimit)
 let antGenotypeEvaluator = AntGenotypeEvaluator()
 
-let pop = try Population(randomGenotypeFactory, count: 500, evaluation: antGenotypeEvaluator.evaluate)
-
-let p = (crossover: 0.5, mutation: 0.5)
-//let eliteCount = Int((Double(pop.preferredCount) * 0.25).rounded())
-let eliteCount = 1
-let mutateCount = pop.preferredCount - eliteCount
+let pop = Population(
+        preferredCount: 500,
+        eliteCount: 1,
+        evaluation: antGenotypeEvaluator.evaluate,
+        selection: tournament.apply,
+        crossover: crossover.apply,
+        mutation: mutation.apply,
+        probabilities: (crossover: 0.5, mutation: 0.5)
+    )
+try pop.generateRandom(randomGenotypeFactory)
 
 pop.evaluateAll()
 pop.sort()
 reportStats(pop)
 
-// Form the next generation
-func update(_ pop: Population) throws {
-    // Preserve elite
-    var nextGeneration = Array(pop.items.prefix(eliteCount))
-    // Fill up to the required size
-    while nextGeneration.count < pop.preferredCount {
-        // Select the base individual
-        var genotype1 = try tournament.apply(population: pop)
-        // Decide what operators to apply:
-        // - crossover (select an extra individual)
-        // - mutation
-        // - copy
-        if urand() < p.crossover {
-            let genotype2 = try tournament.apply(population: pop)
-
-            guard let (genotype3, genotype4) = try? crossover.apply(to: genotype1, genotype2)
-            else { continue }
-
-            nextGeneration.append((genotype3, nil))
-            nextGeneration.append((genotype4, nil))
-        } else {
-            if urand() < p.mutation {
-                do {
-                    genotype1 = try mutation.apply(to: genotype1)
-                } catch {
-                    continue
-                }
-            }
-            nextGeneration.append((genotype1, nil))
-        }
-    }
-    pop.items = nextGeneration
-}
-
 for gen in 0 ..< 50 {
     print("Generation \(gen + 1)")
 
-    try update(pop)
+    try pop.generateNext()
 
     pop.evaluateAll()
     pop.sort()

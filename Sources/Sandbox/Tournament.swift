@@ -1,17 +1,15 @@
-public final class Tournament<Grammar: SomeGrammar> {
+public final class Tournament {
 
     public typealias EvaluatedItem = (genotype: AnyGenotype, score: Double)
 
-    private let grammar: Grammar.Type
     private let size: Int
 
-    public init(grammar: Grammar.Type, size: Int) {
-        self.grammar = grammar
+    public init(size: Int) {
         self.size = size
     }
 
-    public func apply(population: Population) throws -> AnyGenotype {
-        let items = population.items
+    public func apply(to items: [Population.Item]) throws -> AnyGenotype {
+        let evaluatedItems = items
             .compactMap { item -> EvaluatedItem? in
                 guard let score = item.score
                 else { return nil }
@@ -19,12 +17,12 @@ public final class Tournament<Grammar: SomeGrammar> {
                 return (item.genotype, score)
             }
 
-        guard items.count > 0
+        guard evaluatedItems.count > 0
         else { throw Failure.notEnoughCandidates }
 
-        var best = pickRandom(from: items)
+        var best = pickRandom(from: evaluatedItems)
         for _ in 1 ..< size {
-            let candidate = pickRandom(from: items)
+            let candidate = pickRandom(from: evaluatedItems)
             if candidate.score > best.score {
                 best = candidate
             }

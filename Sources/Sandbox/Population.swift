@@ -1,25 +1,46 @@
 public final class Population {
 
     public typealias Evaluation = (AnyGenotype) -> Double
+    public typealias Selection  = ([Item]) throws -> AnyGenotype
+    public typealias Crossover  = (AnyGenotype, AnyGenotype) throws -> (AnyGenotype, AnyGenotype)
+    public typealias Mutation   = (AnyGenotype) throws -> AnyGenotype
+
+    public typealias Probabilities = (crossover: Double, mutation: Double)
+
     public typealias Item = (genotype: AnyGenotype, score: Double?)
 
     public var items = [Item]()
-    public var preferredCount: Int
+    public let preferredCount: Int
+
+    private let eliteCount: Int
     
     private let evaluate: Evaluation
+    private let select: Selection
+    private let crossover: Crossover
+    private let mutate: Mutation
 
-    public init<Grammar>(_ randomGenotypeFactory: RandomGenotypeFactory<Grammar>, count: Int, evaluation: @escaping Evaluation) throws {
-        self.evaluate = evaluation
-        self.preferredCount = count
+    private let p: Probabilities
 
-        // The extra space is a possible extra individual produced during crossover
+    private var attemptLimit: Int { return 100 }
+
+    public init(preferredCount: Int, eliteCount: Int, evaluation: @escaping Evaluation, selection: @escaping Selection, crossover: @escaping Crossover, mutation: @escaping Mutation, probabilities: Probabilities) {
+        // The extra space is for a possible extra individual produced during crossover
         self.items.reserveCapacity(preferredCount + 1)
+        self.preferredCount = preferredCount
+        self.eliteCount = eliteCount
+        self.evaluate = evaluation
+        self.select = selection
+        self.crossover = crossover
+        self.mutate = mutation
+        self.p = probabilities
+    }
+
+    public func generateRandom<Grammar>(_ randomGenotypeFactory: RandomGenotypeFactory<Grammar>) throws {
 
         var hashSet = Set<Int>()
 
         while items.count < preferredCount {
-            // FIXME: 100
-            try attempt(limit: 100) { retry in
+            try attempt(limit: attemptLimit) { retry in
                 let (genotype, hash) = try randomGenotypeFactory.make()
 
                 if !hashSet.contains(hash) {
@@ -31,6 +52,39 @@ public final class Population {
                 }
             }
         }
+    }
+
+    public func generateNext() throws {
+        // Preserve elite
+        var nextGeneration = Array(items.prefix(eliteCount))
+        // Fill up to the required size
+        while nextGeneration.count < preferredCount {
+            // Select the base individual
+            var genotype1 = try select(items)
+            // Decide what operators to apply:
+            // - crossover (with an extra individual)
+            // - mutation
+            // - copy
+            if urand() < p.crossover {
+                let genotype2 = try select(items)
+
+                guard let (genotype3, genotype4) = try? crossover(genotype1, genotype2)
+                else { continue }
+
+                nextGeneration.append((genotype3, nil))
+                nextGeneration.append((genotype4, nil))
+            } else {
+                if urand() < p.mutation {
+                    do {
+                        genotype1 = try mutate(genotype1)
+                    } catch {
+                        continue
+                    }
+                }
+                nextGeneration.append((genotype1, nil))
+            }
+        }
+        items = nextGeneration
     }
 
     public func evaluateAll() {

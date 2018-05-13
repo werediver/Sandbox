@@ -1,24 +1,26 @@
-public final class Mutation<Grammar: SomeGrammar> {
+public final class Mutation {
 
-    private let grammar: Grammar.Type
+    typealias GenotypeScanner = (GenotypeIterating) throws -> Void
+
+    private let scan: GenotypeScanner
     private let codonsCountLimit: Int
     private let attemptsLimit = 100
 
-    public init(grammar: Grammar.Type, limit: Int) {
-        self.grammar = grammar
+    public init<Grammar: SomeGrammar>(grammar: Grammar.Type, limit: Int) {
+        self.scan = { _ = try grammar.generate($0) }
         self.codonsCountLimit = limit
     }
 
     public func apply(to genotype: AnyGenotype) throws -> AnyGenotype {
         let mappingIterator = MappingIterator(genotype)
-        _ = try grammar.generate(mappingIterator)
+        try scan(mappingIterator)
 
         return try attempt(limit: attemptsLimit) {
             let targetSubtreeOffset = rand(below: genotype.codons.count)
             let targetSubtreeSize = mappingIterator.map[targetSubtreeOffset].subtreeSize
 
             let mutatingIterator = MutatingIterator(genotype, subtree: targetSubtreeOffset, size: targetSubtreeSize, limit: codonsCountLimit)
-            _ = try grammar.generate(mutatingIterator)
+            try scan(mutatingIterator)
 
             return mutatingIterator.genotype
         }
