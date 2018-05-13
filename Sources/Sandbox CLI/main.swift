@@ -14,7 +14,7 @@ func clearScreen() {
 
 final class AntGenotypeEvaluator {
 
-    let evaluator = AntEvaluator.santaFeAntTrail
+    let evaluator = AntEvaluator.santaFeTrail
     let antFactory = PhenotypeFactory(grammar: AntGrammar.self)
 
     func evaluate(_ genotype: AnyGenotype) -> Double {

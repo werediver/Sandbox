@@ -24,8 +24,16 @@ public final class AntEvaluator {
 
 public extension AntEvaluator {
 
-    static var santaFeAntTrail: AntEvaluator {
-        let field = try! AntFieldLoader.load(from: "Santa Fe ant trail.txt")
+    static var santaFeTrail: AntEvaluator {
+        let field = try! AntFieldLoader.load(from: "Santa Fe Trail.txt", size: (32, 32))
+        let envFactory = AntEnvironmentFactory(field: field)
+        let evaluator = AntEvaluator(envFactory)
+
+        return evaluator
+    }
+
+    static var losAltosHillsTrail: AntEvaluator {
+        let field = try! AntFieldLoader.load(from: "Los Altos Hills Trail.txt", size: (100, 100))
         let envFactory = AntEnvironmentFactory(field: field)
         let evaluator = AntEvaluator(envFactory)
 

@@ -8,7 +8,7 @@ struct AntFieldLoader {
         case invalidEncoding
     }
 
-    static func load(from path: String) throws -> Matrix<AntFieldItem> {
+    static func load(from path: String, size: AntField.Size) throws -> Matrix<AntFieldItem> {
 
         guard let file = FileHandle(forReadingAtPath: path)
         else { throw Failure.cannotOpenFileForReading }
@@ -18,7 +18,7 @@ struct AntFieldLoader {
         guard let text = String(data: data, encoding: .utf8)
         else { throw Failure.invalidEncoding }
 
-        var matrix = Matrix<AntFieldItem>(repeating: .empty, size: (32, 32))
+        var matrix = AntField(repeating: .empty, size: size)
 
         var lineIndex = 0
         var column = 0
