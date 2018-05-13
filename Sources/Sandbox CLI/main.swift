@@ -41,7 +41,13 @@ final class AntGenotypeEvaluator {
 
     static func draw(_ env: AntEnvironment) {
         clearScreen()
-        print(env.field)
+        let fieldDescription = env.field.description(
+            size: (
+                rows: min(env.field.size.rows, 68),
+                columns: min(env.field.size.columns, 68)
+            )
+        )
+        print(fieldDescription)
         Thread.sleep(forTimeInterval: 0.02)
     }
 }

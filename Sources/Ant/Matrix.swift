@@ -35,11 +35,13 @@ public struct Matrix<Item> {
 
 extension Matrix: CustomStringConvertible {
 
-    public var description: String {
+    public var description: String { return description(size: size) }
+
+    public func description(size: Size) -> String {
         var text = ""
         for row in 0 ..< size.rows {
-            for item in self[row] {
-                text += "\(item) "
+            for column in 0 ..< size.columns {
+                text += "\(self[row, column]) "
             }
             text += "\n"
         }
