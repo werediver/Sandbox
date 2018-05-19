@@ -10,11 +10,11 @@ public enum AntGrammar: SomeGrammar {
 
     public static func generate(_ rule: GenotypeIterating) throws -> AntBlock {
 
-        // x START → BLOCK
-        //   START → COND
+        //   START → BLOCK
+        // x START → COND
 
-        //return try block(rule)
-        return try AntBlock.seq(.cond(cond(rule)))
+        return try block(rule)
+        //return try AntBlock.seq(.cond(cond(rule)))
     }
 
     static func block(_ rule: GenotypeIterating) throws -> AntBlock {
@@ -53,11 +53,11 @@ public enum AntGrammar: SomeGrammar {
 
     static func cond(_ rule: GenotypeIterating) throws -> AntCond {
 
-        // x COND → (RIGHT: BLOCK, WRONG: BLOCK)
-        //   COND → (RIGHT: MOVE, WRONG: BLOCK)
+        //   COND → (RIGHT: BLOCK, WRONG: BLOCK)
+        // x COND → (RIGHT: MOVE, WRONG: BLOCK)
 
-        //return try AntCond(right: block(rule), wrong: block(rule))
-        return try AntCond(right: AntBlock.seq(.op(.move)), wrong: block(rule))
+        return try AntCond(right: block(rule), wrong: block(rule))
+        //return try AntCond(right: AntBlock.seq(.op(.move)), wrong: block(rule))
     }
 
     static func op(_ rule: GenotypeIterating) throws -> AntOp {

@@ -77,7 +77,7 @@ func reportStats(_ pop: Population) {
 
 let codonsCountLimit = 100
 let randomGenotypeFactory = RandomGenotypeFactory(grammar: AntGrammar.self, limit: codonsCountLimit)
-let tournament = Tournament(size: 7)
+let tournament = Tournament(size: 2)
 let crossover = Crossover(grammar: AntGrammar.self, limit: codonsCountLimit)
 let mutation = Mutation(grammar: AntGrammar.self, limit: codonsCountLimit)
 let antGenotypeEvaluator = AntGenotypeEvaluator()
@@ -97,8 +97,10 @@ pop.evaluateAll()
 pop.sort()
 reportStats(pop)
 
-for gen in 0 ..< 50 {
-    print("Generation \(gen + 1)")
+var gen = 0
+while (pop.best?.score ?? 0) < 89, gen < 50 {
+    gen += 1
+    print("Generation \(gen)")
 
     try pop.generateNext()
 
@@ -110,6 +112,7 @@ for gen in 0 ..< 50 {
 if let best = pop.best {
     _ = antGenotypeEvaluator.evaluate(best.genotype, demo: true)
     print("Genotype length: \(best.genotype.codons.count)")
+    print("Found in generation \(gen)")
 }
 
 //_ = antGenotypeEvaluator.evaluate(AntGrammar.referenceAnt, demo: true)
