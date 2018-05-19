@@ -7,8 +7,6 @@ public final class Population {
 
     public typealias Probabilities = (crossover: Double, mutation: Double)
 
-    public typealias Item = (genotype: AnyGenotype, score: Double?)
-
     public var items = [Item]()
     public let preferredCount: Int
 
@@ -44,8 +42,7 @@ public final class Population {
                 let (genotype, hash) = try randomGenotypeFactory.make()
 
                 if !hashSet.contains(hash) {
-                    let item = Item(genotype: genotype, score: nil)
-                    items.append(item)
+                    items.append(Item(genotype))
                     hashSet.insert(hash)
                 } else {
                     try retry()
@@ -71,8 +68,8 @@ public final class Population {
                 guard let (genotype3, genotype4) = try? crossover(genotype1, genotype2)
                 else { continue }
 
-                nextGeneration.append((genotype3, nil))
-                nextGeneration.append((genotype4, nil))
+                nextGeneration.append(Item(genotype3))
+                nextGeneration.append(Item(genotype4))
             } else {
                 if urand() < p.mutation {
                     do {
@@ -81,49 +78,24 @@ public final class Population {
                         continue
                     }
                 }
-                nextGeneration.append((genotype1, nil))
+                nextGeneration.append(Item(genotype1))
             }
         }
         items = nextGeneration
     }
 
-    public func evaluateAll() {
-        items = items.map { item in
-            if item.score != nil {
-                return item
-            } else {
-                return Item(genotype: item.genotype, score: evaluate(item.genotype))
-            }
-        }
-    }
-
-    func selectElite(count: Int) -> [Item] {
+    private func selectElite(count: Int) -> [Item] {
         return items.indices
             .sorted(by: { indexA, indexB in
-                Population.hasHigherScore(items[indexA], than: items[indexB])
+                items[indexA].hasHigherScore(than: items[indexB])
             })
             .prefix(count)
             .map { index in items[index] }
     }
 
-    static func hasHigherScore(_ a: Item?, than b: Item?) -> Bool {
-        return isHigherScore(a?.score, than: b?.score)
-    }
-
-    static func isHigherScore(_ a: Double?, than b: Double?) -> Bool {
-        switch (a, b) {
-        case (nil, _):
-            return false
-        case (.some, nil):
-            return true
-        case let (.some(a), .some(b)):
-            return a > b
-        }
-    }
-
     public var best: Item? {
         return items.reduce(into: Item?.none, { result, item in
-            if Population.hasHigherScore(item, than: result) {
+            if item.hasHigherScore(than: result) {
                 result = item
             }
         })
@@ -133,5 +105,41 @@ public final class Population {
         return items.reduce(into: 0.0, { result, item in
                 result += item.score ?? 0 }
             ) / Double(items.count)
+    }
+
+    public func evaluateAll() {
+        items = items.map { item in
+            item.score != nil ? item : item.scored(evaluate(item.genotype))
+        }
+    }
+
+    public struct Item {
+
+        public let genotype: AnyGenotype
+        public let score: Double?
+
+        public init(_ genotype: AnyGenotype, score: Double? = nil) {
+            self.genotype = genotype
+            self.score = score
+        }
+
+        public func scored(_ newScore: Double) -> Item {
+            return Item(genotype, score: newScore)
+        }
+
+        public func hasHigherScore(than other: Item?) -> Bool {
+            return Item.isHigherScore(score, than: other?.score)
+        }
+
+        public static func isHigherScore(_ a: Double?, than b: Double?) -> Bool {
+            switch (a, b) {
+            case (nil, _):
+                return false
+            case (.some, nil):
+                return true
+            case let (.some(a), .some(b)):
+                return a > b
+            }
+        }
     }
 }
