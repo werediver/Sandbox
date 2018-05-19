@@ -10,6 +10,8 @@ Unlike a classical GP system, this one operates on linear genotypes mapping them
 
 Santa Fe Trail problem is used as a test problem during the development of the system.
 
+Here is [a short video](https://youtu.be/InpbbgpDQkg) demonstrating the system in work! (and no, it does not always find a solution so fast; somewhere around six to eight out of ten times it doesn't find one at all)
+
 ## Running
 
 ```
