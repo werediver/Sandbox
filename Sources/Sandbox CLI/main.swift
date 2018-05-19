@@ -84,12 +84,12 @@ let antGenotypeEvaluator = AntGenotypeEvaluator()
 
 let pop = Population(
         preferredCount: 500,
-        eliteCount: 1,
         evaluation: antGenotypeEvaluator.evaluate,
+        eliteCount: 1,
         selection: tournament.apply,
         crossover: crossover.apply,
         mutation: mutation.apply,
-        probabilities: (crossover: 0.5, mutation: 0.5)
+        probabilities: (crossover: 0.5, mutation: 0.25)
     )
 try pop.generateRandom(randomGenotypeFactory)
 

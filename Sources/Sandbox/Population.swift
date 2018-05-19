@@ -5,8 +5,6 @@ public final class Population {
     public typealias Crossover  = (AnyGenotype, AnyGenotype) throws -> (AnyGenotype, AnyGenotype)
     public typealias Mutation   = (AnyGenotype) throws -> AnyGenotype
 
-    public typealias Probabilities = (crossover: Double, mutation: Double)
-
     public var items = [Item]()
     public let preferredCount: Int
 
@@ -17,16 +15,24 @@ public final class Population {
     private let crossover: Crossover
     private let mutate: Mutation
 
-    private let p: Probabilities
+    private let p: ReproductionWay.Probabilities
 
     private var attemptLimit: Int { return 100 }
 
-    public init(preferredCount: Int, eliteCount: Int, evaluation: @escaping Evaluation, selection: @escaping Selection, crossover: @escaping Crossover, mutation: @escaping Mutation, probabilities: Probabilities) {
+    public init(
+        preferredCount: Int,
+        evaluation: @escaping Evaluation,
+        eliteCount: Int,
+        selection: @escaping Selection,
+        crossover: @escaping Crossover,
+        mutation: @escaping Mutation,
+        probabilities: ReproductionWay.Probabilities
+    ) {
         // The extra space is for a possible extra individual produced during crossover
         self.items.reserveCapacity(preferredCount + 1)
         self.preferredCount = preferredCount
-        self.eliteCount = eliteCount
         self.evaluate = evaluation
+        self.eliteCount = eliteCount
         self.select = selection
         self.crossover = crossover
         self.mutate = mutation
@@ -52,35 +58,32 @@ public final class Population {
     }
 
     public func generateNext() throws {
-        // Preserve elite
-        var nextGeneration = selectElite(count: eliteCount)
-        // Fill up to the required size
-        while nextGeneration.count < preferredCount {
-            // Select the base individual
-            var genotype1 = try select(items)
-            // Decide what operators to apply:
-            // - crossover (with an extra individual)
-            // - mutation
-            // - copy
-            if urand() < p.crossover {
-                let genotype2 = try select(items)
 
-                guard let (genotype3, genotype4) = try? crossover(genotype1, genotype2)
+        var nextGeneration = selectElite(count: eliteCount)
+
+        while nextGeneration.count < preferredCount {
+
+            let baseGenotype = try select(items)
+
+            switch ReproductionWay.sample(p) {
+            case .crossover:
+                let extraGenotype = try select(items)
+
+                guard let (newGenotype1, newGenotype2) = try? crossover(baseGenotype, extraGenotype)
                 else { continue }
 
-                nextGeneration.append(Item(genotype3))
-                nextGeneration.append(Item(genotype4))
-            } else {
-                if urand() < p.mutation {
-                    do {
-                        genotype1 = try mutate(genotype1)
-                    } catch {
-                        continue
-                    }
-                }
-                nextGeneration.append(Item(genotype1))
+                nextGeneration.append(Item(newGenotype1))
+                nextGeneration.append(Item(newGenotype2))
+            case .mutate:
+                guard let newGenotype = try? mutate(baseGenotype)
+                else { continue }
+
+                nextGeneration.append(Item(newGenotype))
+            case .copy:
+                nextGeneration.append(Item(baseGenotype))
             }
         }
+
         items = nextGeneration
     }
 
