@@ -94,7 +94,6 @@ let pop = Population(
 try pop.generateRandom(randomGenotypeFactory)
 
 pop.evaluateAll()
-pop.sort()
 reportStats(pop)
 
 var gen = 0
@@ -105,7 +104,6 @@ while (pop.best?.score ?? 0) < 89, gen < 50 {
     try pop.generateNext()
 
     pop.evaluateAll()
-    pop.sort()
     reportStats(pop)
 }
 

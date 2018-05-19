@@ -56,7 +56,7 @@ public final class Population {
 
     public func generateNext() throws {
         // Preserve elite
-        var nextGeneration = Array(items.prefix(eliteCount))
+        var nextGeneration = selectElite(count: eliteCount)
         // Fill up to the required size
         while nextGeneration.count < preferredCount {
             // Select the base individual
@@ -97,22 +97,33 @@ public final class Population {
         }
     }
 
-    public func sort() {
-        items.sort(by: { a, b in
-            switch (a.score, b.score) {
-            case (nil, _):
-                return false
-            case (.some, nil):
-                return true
-            case let (.some(aScore), .some(bScore)):
-                return aScore > bScore
-            }
-        })
+    func selectElite(count: Int) -> [Item] {
+        return items.indices
+            .sorted(by: { indexA, indexB in
+                Population.hasHigherScore(items[indexA], than: items[indexB])
+            })
+            .prefix(count)
+            .map { index in items[index] }
+    }
+
+    static func hasHigherScore(_ a: Item?, than b: Item?) -> Bool {
+        return isHigherScore(a?.score, than: b?.score)
+    }
+
+    static func isHigherScore(_ a: Double?, than b: Double?) -> Bool {
+        switch (a, b) {
+        case (nil, _):
+            return false
+        case (.some, nil):
+            return true
+        case let (.some(a), .some(b)):
+            return a > b
+        }
     }
 
     public var best: Item? {
         return items.reduce(into: Item?.none, { result, item in
-            if let itemScore = item.score, result?.score.map({ $0 < itemScore }) ?? true {
+            if Population.hasHigherScore(item, than: result) {
                 result = item
             }
         })
