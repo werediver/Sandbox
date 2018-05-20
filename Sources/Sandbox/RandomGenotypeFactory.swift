@@ -1,18 +1,20 @@
-public struct RandomGenotypeFactory<Grammar: SomeGrammar> {
+public struct RandomGenotypeFactory {
 
-    private let grammar: Grammar.Type
+    private typealias Generate = (GenotypeIterating) throws -> Void
+
+    private let generate: Generate
     private let codonsCountLimit: Int
     private let attemptsLimit = 100
 
-    public init(grammar: Grammar.Type, limit: Int) {
-        self.grammar = grammar
+    public init<Grammar: SomeGrammar>(grammar: Grammar.Type, limit: Int) {
+        self.generate = { _ = try grammar.generate($0) }
         self.codonsCountLimit = limit
     }
 
     public func make() throws -> (genotype: AnyGenotype, hash: Int) {
         return try attempt(limit: attemptsLimit) {
             let iterator = RandomIterator(limit: codonsCountLimit)
-            _ = try grammar.generate(iterator)
+            try generate(iterator)
             return (Genotype(iterator.codons), iterator.combinedHash)
         }
     }

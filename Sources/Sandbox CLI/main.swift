@@ -84,14 +84,15 @@ let antGenotypeEvaluator = AntGenotypeEvaluator()
 
 let pop = Population(
         preferredCount: 500,
+        randomGenotypeFactory: randomGenotypeFactory,
         evaluation: antGenotypeEvaluator.evaluate,
         eliteCount: 1,
         selection: tournament.apply,
         crossover: crossover.apply,
         mutation: mutation.apply,
-        probabilities: (crossover: 0.5, mutation: 0.25)
+        reproductionShaper: ReproductionShaper(profile: ReproductionProfile(generate: 0, crossover: 0.5, mutate: 0.25))
     )
-try pop.generateRandom(randomGenotypeFactory)
+try pop.generateRandom()
 
 pop.evaluateAll()
 reportStats(pop)

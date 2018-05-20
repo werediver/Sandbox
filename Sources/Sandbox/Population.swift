@@ -9,37 +9,40 @@ public final class Population {
     public let preferredCount: Int
 
     private let eliteCount: Int
-    
+
+    private let randomGenotypeFactory: RandomGenotypeFactory
     private let evaluate: Evaluation
     private let select: Selection
     private let crossover: Crossover
     private let mutate: Mutation
 
-    private let p: ReproductionWay.Probabilities
+    private let reproductionShaper: ReproductionShaper
 
     private var attemptLimit: Int { return 100 }
 
     public init(
         preferredCount: Int,
+        randomGenotypeFactory: RandomGenotypeFactory,
         evaluation: @escaping Evaluation,
         eliteCount: Int,
         selection: @escaping Selection,
         crossover: @escaping Crossover,
         mutation: @escaping Mutation,
-        probabilities: ReproductionWay.Probabilities
+        reproductionShaper: ReproductionShaper
     ) {
         // The extra space is for a possible extra individual produced during crossover
         self.items.reserveCapacity(preferredCount + 1)
         self.preferredCount = preferredCount
+        self.randomGenotypeFactory = randomGenotypeFactory
         self.evaluate = evaluation
         self.eliteCount = eliteCount
         self.select = selection
         self.crossover = crossover
         self.mutate = mutation
-        self.p = probabilities
+        self.reproductionShaper = reproductionShaper
     }
 
-    public func generateRandom<Grammar>(_ randomGenotypeFactory: RandomGenotypeFactory<Grammar>) throws {
+    public func generateRandom() throws {
 
         var hashSet = Set<Int>()
 
@@ -60,12 +63,18 @@ public final class Population {
     public func generateNext() throws {
 
         var nextGeneration = selectElite(count: eliteCount)
+        nextGeneration.reserveCapacity(preferredCount + 1)
 
         while nextGeneration.count < preferredCount {
 
             let baseGenotype = try select(items)
 
-            switch ReproductionWay.sample(p) {
+            switch reproductionShaper.sample() {
+            case .generate:
+                guard let (newGenotype, _) = try? randomGenotypeFactory.make()
+                else { continue }
+
+                nextGeneration.append(Item(newGenotype))
             case .crossover:
                 let extraGenotype = try select(items)
 
