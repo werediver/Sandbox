@@ -11,7 +11,7 @@ public final class Population {
     private let eliteCount: Int
 
     private let randomGenotypeFactory: RandomGenotypeFactory
-    private let evaluate: Evaluation
+    let evaluate: Evaluation
     private let select: Selection
     private let crossover: Crossover
     private let mutate: Mutation
