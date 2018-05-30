@@ -78,8 +78,8 @@ func reportStats(_ pop: Population) {
 let codonsCountLimit = 100
 let randomGenotypeFactory = RandomGenotypeFactory(grammar: AntGrammar.self, limit: codonsCountLimit)
 let tournament = Tournament(size: 2)
-let crossover = Crossover(grammar: AntGrammar.self, limit: codonsCountLimit)
-let mutation = Mutation(grammar: AntGrammar.self, limit: codonsCountLimit)
+let crossover = SubtreeCrossover(grammar: AntGrammar.self, limit: codonsCountLimit)
+let mutation = SubtreeLocalMutation(grammar: AntGrammar.self, limit: codonsCountLimit)
 let antGenotypeEvaluator = AntGenotypeEvaluator()
 
 let pop = Population(

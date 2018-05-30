@@ -1,4 +1,4 @@
-public final class Mutation {
+public final class SubtreeLocalMutation {
 
     typealias GenotypeScanner = (GenotypeIterating) throws -> Void
 

@@ -1,4 +1,4 @@
-public final class Crossover {
+public final class SubtreeCrossover {
 
     typealias GenotypeScanner = (GenotypeIterating) throws -> Void
 
