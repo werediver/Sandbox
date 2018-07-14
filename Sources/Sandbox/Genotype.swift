@@ -10,6 +10,13 @@ public protocol GenotypeIterating {
     func next<T>(tag: String, below upperBound: Int, _ body: (Int) throws -> T) throws -> T
 }
 
+public extension GenotypeIterating {
+
+    func next<T>(function: String = #function, below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
+        return try next(tag: function, below: upperBound, body)
+    }
+}
+
 struct Genotype: AnyGenotype {
 
     var codons: [Int]

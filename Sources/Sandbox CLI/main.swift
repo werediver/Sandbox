@@ -1,68 +1,35 @@
 import Sandbox
 import Ant
-import class Foundation.Thread
-import func Foundation.exit
 
-func clearScrollBuffer() { print("\u{1B}[3J") }
+enum StoppingCriterion {
 
-func clearScreen() {
-    clearScrollBuffer()
-    print("\u{1B}[2J")
-}
+    case generation(Int)
+    case score(Double)
+    case either(score: Double, generation: Int)
 
-//func clearLine() { print("\u{1B}[") }
-
-final class AntGenotypeEvaluator {
-
-    let evaluator = AntEvaluator.santaFeTrail
-    let antFactory = PhenotypeFactory(grammar: AntGrammar.self)
-
-    func evaluate(_ genotype: AnyGenotype) -> Double {
-        return evaluate(genotype, demo: false)
-    }
-
-    func evaluate(_ genotype: AnyGenotype, demo: Bool) -> Double {
-        guard let ant = try? antFactory.make(from: genotype)
-        else { return -Double.infinity }
-
-        return evaluate(ant, demo: demo)
-    }
-
-    func evaluate(_ ant: AntBlock, demo: Bool) -> Double {
-        let score = evaluator.evaluate(ant, onChange: demo ? AntGenotypeEvaluator.draw : nil)
-
-        if demo {
-            print("Score: \(score)")
-            print("Ant:\n\(ant)")
+    func isMet(score: Double, generation: Int) -> Bool {
+        switch self {
+        case let .generation(limit):
+            return generation >= limit
+        case let .score(target):
+            return score >= target
+        case let .either(target, limit):
+            return score >= target || generation >= limit
         }
-
-        return score
-    }
-
-    static func draw(_ env: AntEnvironment) {
-        clearScreen()
-        let fieldDescription = env.field.description(
-            size: (
-                rows: min(env.field.size.rows, 68),
-                columns: min(env.field.size.columns, 68)
-            )
-        )
-        print(fieldDescription)
-        Thread.sleep(forTimeInterval: 0.02)
     }
 }
 
 func reportStats(_ pop: Population) {
-    var lengthMap = [Int: Int]()
-    for item in pop.items {
-        let length = item.genotype.codons.count
-        lengthMap[length] = (lengthMap[length] ?? 0) + 1
-    }
-    for length in lengthMap.keys.sorted() {
-        let count = lengthMap[length] ?? 0
-        let bar = repeatElement("#", count: count).joined()
-        print(String.init(format: "%3i:%3i %@", length, count, bar))
-    }
+//    var lengthMap = [Int: Int]()
+//    for item in pop.items {
+//        let length = item.genotype.codons.count
+//        lengthMap[length] = (lengthMap[length] ?? 0) + 1
+//    }
+//    for length in lengthMap.keys.sorted() {
+//        let count = lengthMap[length] ?? 0
+//        let bar = repeatElement("#", count: count).joined()
+//        print(String.init(format: "%3i:%3i %@", length, count, bar))
+//    }
 
     if let best = pop.best {
         print("Average score: \(pop.averageScore)")
@@ -75,43 +42,65 @@ func reportStats(_ pop: Population) {
     }
 }
 
-let codonsCountLimit = 100
-let randomGenotypeFactory = RandomGenotypeFactory(grammar: AntGrammar.self, limit: codonsCountLimit)
-let tournament = Tournament(size: 2)
-let crossover = SubtreeCrossover(grammar: AntGrammar.self, limit: codonsCountLimit)
-let mutation = SubtreeLocalMutation(grammar: AntGrammar.self, limit: codonsCountLimit)
-let antGenotypeEvaluator = AntGenotypeEvaluator()
+func run(until stoppingCriterion: StoppingCriterion) throws -> Bool {
 
-let pop = Population(
-        preferredCount: 500,
-        randomGenotypeFactory: randomGenotypeFactory,
-        evaluation: antGenotypeEvaluator.evaluate,
-        eliteCount: 1,
-        selection: tournament.apply,
-        crossover: crossover.apply,
-        mutation: mutation.apply,
-        reproductionShaper: ReproductionShaper(profile: ReproductionProfile(generate: 0, crossover: 0.5, mutate: 0.25))
-    )
-try pop.generateRandom()
+    let codonsCountLimit = 100
+    let randomGenotypeFactory = RandomGenotypeFactory(grammar: AntGrammar.self, limit: codonsCountLimit)
+    let tournament = Tournament(size: 2)
+    let crossover = SubtreeCrossover(grammar: AntGrammar.self, limit: codonsCountLimit)
+    let mutation = SubtreeLocalMutation(grammar: AntGrammar.self, limit: codonsCountLimit)
+    let antGenotypeEvaluator = AntGenotypeEvaluator()
 
-pop.evaluateAll()
-reportStats(pop)
-
-var gen = 0
-while (pop.best?.score ?? 0) < 89, gen < 50 {
-    gen += 1
-    print("Generation \(gen)")
-
-    try pop.generateNext()
+    let pop = Population(
+            preferredCount: 500,
+            randomGenotypeFactory: randomGenotypeFactory,
+            evaluation: antGenotypeEvaluator.evaluate,
+            eliteCount: 1,
+            selection: tournament.apply,
+            crossover: crossover.apply,
+            mutation: mutation.apply,
+            reproductionShaper: ReproductionShaper(profile: ReproductionProfile(generate: 0, crossover: 0.5, mutate: 0.25))
+        )
+    try pop.generateRandom()
 
     pop.evaluateAll()
-    reportStats(pop)
+    //reportStats(pop)
+
+    var gen = 0
+    while !stoppingCriterion.isMet(score: pop.best?.score ?? 0, generation: gen) {
+        gen += 1
+        //print("Generation \(gen)")
+
+        try pop.generateNext()
+
+        pop.evaluateAllConcurrently()
+        //reportStats(pop)
+    }
+
+    if let best = pop.best, best.score.map({ $0 >= targetScore}) ?? false {
+        //_ = antGenotypeEvaluator.evaluate(best.genotype, demo: true)
+        //print("Genotype length: \(best.genotype.codons.count)")
+        print("Found in generation \(gen)")
+    }
+
+    return (pop.best?.score ?? 0) >= targetScore
 }
 
-if let best = pop.best {
-    _ = antGenotypeEvaluator.evaluate(best.genotype, demo: true)
-    print("Genotype length: \(best.genotype.codons.count)")
-    print("Found in generation \(gen)")
+let targetScore: Double = 89
+let stoppingCriterion = StoppingCriterion.either(score: targetScore, generation: 50)
+//let goal = Goal.generation(50)
+
+var runCount = 0
+var successCount = 0
+
+for _ in 0 ..< 100 {
+
+    let success = try run(until: stoppingCriterion)
+
+    runCount += 1
+    successCount += success ? 1 : 0
+
+    print("Success count / run count: \(successCount) / \(runCount), \(Double(successCount) / Double(runCount))")
 }
 
 //_ = antGenotypeEvaluator.evaluate(AntGrammar.referenceAnt, demo: true)

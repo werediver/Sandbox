@@ -22,7 +22,7 @@ public enum AntGrammar: SomeGrammar {
         // BLOCK → STMT
         //       / STMT BLOCK
 
-        return try rule.next(tag: "lines", below: 2) { codon in
+        return try rule.next(below: 2) { codon in
             switch codon {
             case 0:
                 return try AntBlock(statement: statement(rule), more: nil)
@@ -39,7 +39,7 @@ public enum AntGrammar: SomeGrammar {
         // STMT → COND
         //      / OP
 
-        return try rule.next(tag: "line", below: 2) { codon in
+        return try rule.next(below: 2) { codon in
             switch codon {
             case 0:
                 return try .cond(cond(rule))
@@ -64,7 +64,7 @@ public enum AntGrammar: SomeGrammar {
 
         // OP → TURN_LEFT / TURN_RIGHT / MOVE
 
-        return try rule.next(tag: "op", below: 3) { codon in
+        return try rule.next(below: 3) { codon in
             switch codon {
             case 0:
                 return .left
