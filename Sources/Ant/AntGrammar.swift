@@ -22,16 +22,10 @@ public enum AntGrammar: SomeGrammar {
         // BLOCK → STMT
         //       / STMT BLOCK
 
-        return try rule.next(below: 2) { codon in
-            switch codon {
-            case 0:
-                return try AntBlock(statement: statement(rule), more: nil)
-            case 1:
-                return try AntBlock(statement: statement(rule), more: block(rule))
-            default:
-                throw Failure.invalidCodon
-            }
-        }
+        return try rule.next(
+            { try AntBlock(statement: statement(rule), more: nil) },
+            { try AntBlock(statement: statement(rule), more: block(rule)) }
+        )
     }
 
     static func statement(_ rule: GenotypeIterating) throws -> AntStatement {
@@ -39,16 +33,10 @@ public enum AntGrammar: SomeGrammar {
         // STMT → COND
         //      / OP
 
-        return try rule.next(below: 2) { codon in
-            switch codon {
-            case 0:
-                return try .cond(cond(rule))
-            case 1:
-                return try .op(op(rule))
-            default:
-                throw Failure.invalidCodon
-            }
-        }
+        return try rule.next(
+            { try .cond(cond(rule)) },
+            { try .op(op(rule)) }
+        )
     }
 
     static func cond(_ rule: GenotypeIterating) throws -> AntCond {
@@ -64,18 +52,11 @@ public enum AntGrammar: SomeGrammar {
 
         // OP → TURN_LEFT / TURN_RIGHT / MOVE
 
-        return try rule.next(below: 3) { codon in
-            switch codon {
-            case 0:
-                return .left
-            case 1:
-                return .right
-            case 2:
-                return .move
-            default:
-                throw Failure.invalidCodon
-            }
-        }
+        return try rule.next(
+            { .left },
+            { .right },
+            { .move }
+        )
     }
 
     public static var referenceAnt: AntBlock {

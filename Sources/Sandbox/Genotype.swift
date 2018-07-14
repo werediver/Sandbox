@@ -12,8 +12,8 @@ public protocol GenotypeIterating {
 
 public extension GenotypeIterating {
 
-    func next<T>(function: String = #function, below upperBound: Int, _ body: (Int) throws -> T) throws -> T {
-        return try next(tag: function, below: upperBound, body)
+    func next<T>(function: String = #function, _ caseList: (() throws -> T)...) throws -> T {
+        return try next(tag: function, below: caseList.count, { try caseList[$0]() })
     }
 }
 
